@@ -39,7 +39,7 @@ type Preview = {
   selection: Selection;
 };
 
-const initialContent = `Welcome to CollabEdit AI!
+const placeholderContent = `Welcome to CollabEdit AI!
 
 This is a demonstration of an AI-powered collaborative editor.
 
@@ -56,7 +56,7 @@ Here is a sentence with some bad grammer and speling.`;
 
 export default function Home() {
   const { toast } = useToast();
-  const [editorContent, setEditorContent] = useState(initialContent);
+  const [editorContent, setEditorContent] = useState('');
 
   const [selection, setSelection] = useState<Selection | null>(null);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
@@ -288,7 +288,7 @@ export default function Home() {
             onChange={(e) => setEditorContent(e.target.value)}
             onMouseUp={handleMouseUp}
             onTouchEnd={handleTouchEnd}
-            placeholder="Start writing your document here..."
+            placeholder={placeholderContent}
             className="h-full w-full resize-none rounded-lg border bg-card p-4 text-base shadow-sm focus-visible:ring-primary"
           />
           {selection && (
