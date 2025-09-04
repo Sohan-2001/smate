@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { Bot, Send, Sparkles, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,13 @@ import { summarizeSelectedText } from "@/ai/flows/summarize-selected-text";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 type Message = {
   role: "user" | "ai";
@@ -253,6 +259,11 @@ export default function Home() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent className="w-full max-w-sm p-0 flex flex-col">
+                    <SheetHeader className="p-4 border-b">
+                        <SheetTitle className="flex items-center gap-2 text-lg">
+                           <Bot /> AI Assistant
+                        </SheetTitle>
+                    </SheetHeader>
                     <ChatPanel />
                 </SheetContent>
             </Sheet>
