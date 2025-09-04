@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/generate-text-from-prompt.ts';
+import '@/ai/flows/summarize-selected-text.ts';
+import '@/ai/flows/improve-writing-style.ts';
