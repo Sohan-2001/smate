@@ -19,8 +19,7 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
     <Card
       className={cn(
         "fixed z-10 shadow-lg animate-in fade-in zoom-in-95",
-        "md:absolute",
-        "bottom-4 left-4 right-4 md:bottom-auto md:left-auto md:right-auto"
+        "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:absolute md:top-auto md:left-auto md:translate-x-0 md:translate-y-0"
       )}
       style={{ top: position.top, left: position.left }}
     >
@@ -29,7 +28,6 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => onAction("improve")}
-          className="flex-1 md:flex-initial"
         >
           <Wand2 className="h-4 w-4 mr-2 text-primary" />
           Improve
@@ -38,7 +36,6 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => onAction("summarize")}
-          className="flex-1 md:flex-initial"
         >
           <BookText className="h-4 w-4 mr-2 text-accent-foreground" />
           Summarize
