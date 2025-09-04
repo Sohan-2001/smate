@@ -151,6 +151,10 @@ export default function Home() {
     setPreview(null);
   };
 
+  const handleApplyToEditor = (content: string) => {
+    setEditorContent((prevContent) => prevContent + "\n\n" + content);
+  };
+
   return (
     <div className="flex h-screen w-full flex-col bg-background">
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 bg-card">
@@ -204,6 +208,16 @@ export default function Home() {
                     }`}
                   >
                     {msg.content}
+                     {msg.role === "ai" && index > 0 && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full justify-start mt-2"
+                        onClick={() => handleApplyToEditor(msg.content)}
+                      >
+                        Apply to editor
+                      </Button>
+                    )}
                   </div>
                   {msg.role === "user" && (
                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
