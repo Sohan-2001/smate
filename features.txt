@@ -1,0 +1,7 @@
+Features of CollabEdit AI:
+
+- Real-time Editor: Write and edit your documents seamlessly.
+- AI Chat Assistant: Get help, ask questions, or generate content using the chat sidebar on the right.
+- Contextual AI Actions: Select any piece of text with your mouse to bring up a floating toolbar with AI-powered editing options.
+
+The application is deployed at: https://first-connect-editor.vercel.app/
