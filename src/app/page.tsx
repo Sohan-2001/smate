@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useState, type MouseEvent, TouchEvent } from "react";
 import { Bot, Send, Sparkles, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,21 +70,33 @@ export default function Home() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const handleSelectionChange = (e: MouseEvent<HTMLTextAreaElement>) => {
-    const textarea = e.currentTarget;
-    const { selectionStart, selectionEnd } = textarea;
-
+  const handleSelection = (
+    target: HTMLTextAreaElement,
+    clientX?: number,
+    clientY?: number
+  ) => {
+    const { selectionStart, selectionEnd } = target;
     if (selectionStart !== selectionEnd) {
-      const selectedText = textarea.value.substring(selectionStart, selectionEnd);
+      const selectedText = target.value.substring(selectionStart, selectionEnd);
       setSelection({
         start: selectionStart,
         end: selectionEnd,
         text: selectedText,
       });
-      setToolbarPosition({ top: e.clientY - 70, left: e.clientX - 110 });
+      if (clientX && clientY) {
+        setToolbarPosition({ top: clientY - 70, left: clientX - 110 });
+      }
     } else {
       setSelection(null);
     }
+  };
+
+  const handleMouseUp = (e: MouseEvent<HTMLTextAreaElement>) => {
+    handleSelection(e.currentTarget, e.clientX, e.clientY);
+  };
+
+  const handleTouchEnd = (e: TouchEvent<HTMLTextAreaElement>) => {
+    handleSelection(e.currentTarget);
   };
 
   const handleChatSubmit = async (e: React.FormEvent) => {
@@ -274,7 +286,8 @@ export default function Home() {
           <Textarea
             value={editorContent}
             onChange={(e) => setEditorContent(e.target.value)}
-            onMouseUp={handleSelectionChange}
+            onMouseUp={handleMouseUp}
+            onTouchEnd={handleTouchEnd}
             placeholder="Start writing your document here..."
             className="h-full w-full resize-none rounded-lg border bg-card p-4 text-base shadow-sm focus-visible:ring-primary"
           />
