@@ -40,20 +40,7 @@ type Preview = {
   selection: Selection;
 };
 
-const placeholderContent = `Welcome to CollabEdit AI!
-
-This is a demonstration of an AI-powered collaborative editor.
-
-Features:
-- Real-time Editor: Write and edit your documents seamlessly.
-- AI Chat Assistant: Get help, ask questions, or generate content using the chat sidebar on the right.
-- Contextual AI Actions: Select any piece of text with your mouse to bring up a floating toolbar with AI-powered editing options.
-
-Try it out!
-1. Select the text 'bad grammer and speling' below and click "Improve".
-2. Ask the AI in the chat to "Explain quantum computing in simple terms".
-
-Here is a sentence with some bad grammer and speling.`;
+const placeholderContent = `Welcome to CollabEdit AI! Start typing, or select text to see AI actions. You can also use the AI assistant on the right.`;
 
 export default function Home() {
   const { toast } = useToast();
