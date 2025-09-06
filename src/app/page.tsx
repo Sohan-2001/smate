@@ -320,7 +320,7 @@ export default function Home() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="w-full justify-start mt-2"
+                    className="w-full justify-start mt-2 border"
                     onClick={() => handleApplyToEditor(msg.content)}
                   >
                     Apply to editor
@@ -432,3 +432,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
