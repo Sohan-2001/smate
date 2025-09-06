@@ -64,8 +64,9 @@ export default function Home() {
   ) => {
     const target = e.currentTarget;
     const { selectionStart, selectionEnd } = target;
+    const editor = editorRef.current;
 
-    if (selectionStart !== selectionEnd) {
+    if (selectionStart !== selectionEnd && editor) {
       const selectedText = target.value.substring(selectionStart, selectionEnd);
       setSelection({
         start: selectionStart,
@@ -75,61 +76,61 @@ export default function Home() {
       
       const isTouchEvent = 'touches' in e;
 
-      if (!isTouchEvent && editorRef.current) {
-        const rect = editorRef.current.getBoundingClientRect();
-        
-        // The following logic is based on https://github.com/dianagu/get-cursor-position
-        const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
-        const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
-        
-        const div = document.createElement('div');
-        div.id = 'input-textarea-caret-position-mirror-div';
-        document.body.appendChild(div);
-        
-        const style = div.style;
-        const computed = window.getComputedStyle ? window.getComputedStyle(target) : (target as any).currentStyle;
-        const isInput = target.nodeName === 'INPUT';
-        
-        style.whiteSpace = 'pre-wrap';
-        if (!isInput) {
-            style.wordWrap = 'break-word';
-        }
-        
-        style.position = 'absolute';
-        style.visibility = 'hidden';
-        
-        properties.forEach(function (prop) {
-            style[prop as any] = computed[prop as any];
-        });
-
-        if (isFirefox) {
-            if (target.scrollHeight > parseInt(computed.height))
-                style.overflowY = 'scroll';
-        } else {
-            style.overflow = 'hidden';
-        }
-        
-        div.textContent = target.value.substring(0, selectionStart);
-        
-        if (isInput) {
-            div.textContent = div.textContent!.replace(/\s/g, '\u00a0');
-        }
-
-        const span = document.createElement('span');
-        span.textContent = target.value.substring(selectionStart) || '.';
-        div.appendChild(span);
-        
-        const { x, y } = target.getBoundingClientRect();
-        const top = span.offsetTop + parseInt(computed['borderTopWidth']) - target.scrollTop;
-        const left = span.offsetLeft + parseInt(computed['borderLeftWidth']);
-        
-        document.body.removeChild(div);
-        
-        setToolbarPosition({
-            top: top + 15,
-            left: left > rect.width ? rect.width : left,
-        });
+      // The following logic is based on https://github.com/dianagu/get-cursor-position
+      const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
+      const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
+      
+      const div = document.createElement('div');
+      div.id = 'input-textarea-caret-position-mirror-div';
+      document.body.appendChild(div);
+      
+      const style = div.style;
+      const computed = window.getComputedStyle ? window.getComputedStyle(target) : (target as any).currentStyle;
+      const isInput = target.nodeName === 'INPUT';
+      
+      style.whiteSpace = 'pre-wrap';
+      if (!isInput) {
+          style.wordWrap = 'break-word';
       }
+      
+      style.position = 'absolute';
+      style.visibility = 'hidden';
+      
+      properties.forEach(function (prop) {
+          style[prop as any] = computed[prop as any];
+      });
+
+      if (isFirefox) {
+          if (target.scrollHeight > parseInt(computed.height))
+              style.overflowY = 'scroll';
+      } else {
+          style.overflow = 'hidden';
+      }
+      
+      div.textContent = target.value.substring(0, selectionStart);
+      
+      if (isInput) {
+          div.textContent = div.textContent!.replace(/\s/g, '\u00a0');
+      }
+
+      const span = document.createElement('span');
+      span.textContent = target.value.substring(selectionStart) || '.';
+      div.appendChild(span);
+      
+      const { x, y } = target.getBoundingClientRect();
+      const top = span.offsetTop + parseInt(computed['borderTopWidth']) - target.scrollTop;
+      const left = span.offsetLeft + parseInt(computed['borderLeftWidth']);
+      
+      document.body.removeChild(div);
+      
+      const editorRect = editor.getBoundingClientRect();
+      const relativeTop = top + 15;
+      const relativeLeft = left;
+
+      setToolbarPosition({
+          top: Math.min(relativeTop, editorRect.height - 60),
+          left: Math.min(relativeLeft, editorRect.width - 250),
+      });
 
     } else {
       setSelection(null);
@@ -170,7 +171,7 @@ export default function Home() {
     }
   };
 
-  const handleToolbarAction = async (action: "improve" | "summarize") => {
+  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone" | "change-tense") => {
     if (!selection || isLoading) return;
     setIsLoading(true);
 
@@ -179,27 +180,60 @@ export default function Home() {
 
     try {
       let result;
-      if (action === "improve") {
-        result = await improveWritingStyle({ text: currentSelection.text });
-        setPreview({
-          original: currentSelection.text,
-          suggestion: result.improvedText,
-          selection: currentSelection,
-        });
-      } else if (action === "summarize") {
-        result = await summarizeSelectedText({ selectedText: currentSelection.text });
-        setPreview({
-          original: currentSelection.text,
-          suggestion: result.summary,
-          selection: currentSelection,
-        });
+      let prompt;
+      switch (action) {
+        case "improve":
+          result = await improveWritingStyle({ text: currentSelection.text });
+          setPreview({
+            original: currentSelection.text,
+            suggestion: result.improvedText,
+            selection: currentSelection,
+          });
+          break;
+        case "summarize":
+          result = await summarizeSelectedText({ selectedText: currentSelection.text });
+          setPreview({
+            original: currentSelection.text,
+            suggestion: result.summary,
+            selection: currentSelection,
+          });
+          break;
+        case "fix-grammar":
+          prompt = `Fix the grammar and spelling for the following text: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+           setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        case "fix-tone":
+           prompt = `Make the tone of the following text more professional: "${currentSelection.text}"`;
+           result = await generateText({ prompt });
+           setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        case "change-tense":
+           prompt = `Change the tense of the following text to past tense: "${currentSelection.text}"`;
+           result = await generateText({ prompt });
+           setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        default:
+          break;
       }
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
         title: "AI Error",
-        description: `Failed to ${action} text.`,
+        description: `Failed to ${action.replace('-', ' ')} text.`,
       });
     } finally {
       setIsLoading(false);
