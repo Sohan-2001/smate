@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sheet";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatPanel } from "@/components/chat-panel";
+import { LoaderOverlay } from "@/components/loader-overlay";
 
 type Selection = {
   start: number;
@@ -274,6 +275,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">
+      {isLoading && <LoaderOverlay />}
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 bg-card">
         <div className="flex items-center gap-3">
           <Wand2 className="h-6 w-6 text-primary" />
