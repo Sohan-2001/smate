@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ModeToggle } from "@/components/mode-toggle";
 
 type Message = {
   role: "user" | "ai";
@@ -262,23 +263,26 @@ export default function Home() {
           <Wand2 className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold tracking-tight">CollabEdit AI</h1>
         </div>
-        <div className="md:hidden">
-            <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <Bot className="h-6 w-6" />
-                        <span className="sr-only">Toggle AI Assistant</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent className="w-full max-w-sm p-0 flex flex-col">
-                    <SheetHeader className="p-4 border-b">
-                        <SheetTitle className="flex items-center gap-2 text-lg">
-                           <Bot /> AI Assistant
-                        </SheetTitle>
-                    </SheetHeader>
-                    <ChatPanel />
-                </SheetContent>
-            </Sheet>
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <div className="md:hidden">
+              <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+                  <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                          <Bot className="h-6 w-6" />
+                          <span className="sr-only">Toggle AI Assistant</span>
+                      </Button>
+                  </SheetTrigger>
+                  <SheetContent className="w-full max-w-sm p-0 flex flex-col">
+                      <SheetHeader className="p-4 border-b">
+                          <SheetTitle className="flex items-center gap-2 text-lg">
+                             <Bot /> AI Assistant
+                          </SheetTitle>
+                      </SheetHeader>
+                      <ChatPanel />
+                  </SheetContent>
+              </Sheet>
+          </div>
         </div>
       </header>
       <main className="flex flex-1 overflow-hidden">
