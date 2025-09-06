@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent, TouchEvent } from "react";
+import { useState, type MouseEvent, TouchEvent, useRef } from "react";
 import { Bot, Send, Sparkles, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +45,7 @@ const placeholderContent = `Welcome to CollabEdit AI! Start typing, or select te
 export default function Home() {
   const { toast } = useToast();
   const [editorContent, setEditorContent] = useState('');
+  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const [selection, setSelection] = useState<Selection | null>(null);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
@@ -59,11 +60,11 @@ export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleSelection = (
-    target: HTMLTextAreaElement,
-    clientX?: number,
-    clientY?: number
+    e: MouseEvent<HTMLTextAreaElement> | TouchEvent<HTMLTextAreaElement>
   ) => {
+    const target = e.currentTarget;
     const { selectionStart, selectionEnd } = target;
+
     if (selectionStart !== selectionEnd) {
       const selectedText = target.value.substring(selectionStart, selectionEnd);
       setSelection({
@@ -71,20 +72,28 @@ export default function Home() {
         end: selectionEnd,
         text: selectedText,
       });
-      if (clientX && clientY) {
-        setToolbarPosition({ top: clientY - 70, left: clientX - 110 });
+      
+      const isTouchEvent = 'touches' in e;
+
+      if (!isTouchEvent && editorRef.current) {
+        const rect = editorRef.current.getBoundingClientRect();
+        const relativeX = e.clientX - rect.left;
+        const relativeY = e.clientY - rect.top;
+        setToolbarPosition({ top: relativeY - 40, left: relativeX });
       }
+
     } else {
       setSelection(null);
     }
   };
 
+
   const handleMouseUp = (e: MouseEvent<HTMLTextAreaElement>) => {
-    handleSelection(e.currentTarget, e.clientX, e.clientY);
+    handleSelection(e);
   };
 
   const handleTouchEnd = (e: TouchEvent<HTMLTextAreaElement>) => {
-    handleSelection(e.currentTarget);
+    handleSelection(e);
   };
 
   const handleChatSubmit = async (e: React.FormEvent) => {
@@ -260,7 +269,7 @@ export default function Home() {
                           <span className="sr-only">Toggle AI Assistant</span>
                       </Button>
                   </SheetTrigger>
-                  <SheetContent className="w-full max-w-sm p-0 flex flex-col">
+                  <SheetContent className="w-full max-w-sm p-0 flex flex-col" side="right">
                       <SheetHeader className="p-4 border-b">
                           <SheetTitle className="flex items-center gap-2 text-lg">
                              <Bot /> AI Assistant
@@ -275,6 +284,7 @@ export default function Home() {
       <main className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative p-4 md:p-6">
           <Textarea
+            ref={editorRef}
             value={editorContent}
             onChange={(e) => setEditorContent(e.target.value)}
             onMouseUp={handleMouseUp}

@@ -18,8 +18,9 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
   return (
     <Card
       className={cn(
-        "fixed z-10 shadow-lg animate-in fade-in zoom-in-95",
-        "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:absolute md:top-auto md:left-auto md:translate-x-0 md:translate-y-0"
+        "absolute z-10 shadow-lg animate-in fade-in zoom-in-95",
+        "md:top-auto md:left-auto",
+        "max-md:left-1/2 max-md:-translate-x-1/2 max-md:top-1/2 max-md:-translate-y-1/2"
       )}
       style={{ top: position.top, left: position.left }}
     >
