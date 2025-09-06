@@ -36,7 +36,7 @@ type Preview = {
   corrections?: CheckSpellingOutput['corrections'];
 };
 
-const placeholderContent = `Welcome to CollabEdit AI! Start typing, or select text to see AI actions. You can also use the AI assistant on the right.`;
+const placeholderContent = `Welcome to SMATE! Start typing, or select text to see AI actions. You can also use the AI assistant on the right.`;
 
 export default function Home() {
   const { toast } = useToast();
@@ -279,7 +279,7 @@ export default function Home() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 bg-card">
         <div className="flex items-center gap-3">
           <Wand2 className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">CollabEdit AI</h1>
+          <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
         </div>
         <div className="flex items-center gap-2">
           <ModeToggle />

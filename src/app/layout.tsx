@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'CollabEdit AI',
+  title: 'SMATE',
   description: 'Live Collaborative Editor with AI assistant',
 };
 

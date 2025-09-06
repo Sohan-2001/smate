@@ -1,4 +1,4 @@
-Features of CollabEdit AI:
+Features of SMATE:
 
 - Real-time Editor: Write and edit your documents seamlessly.
 - AI Chat Assistant: Get help, ask questions, or generate content using the chat sidebar on the right.
