@@ -13,6 +13,9 @@ import {
   CircleArrowRight,
   History,
   AlarmClock,
+  Smile,
+  Rocket,
+  CaseSensitive,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,7 +34,10 @@ interface FloatingToolbarProps {
       | "improve"
       | "summarize"
       | "fix-grammar"
-      | "fix-tone"
+      | "fix-tone-professional"
+      | "fix-tone-casual"
+      | "fix-tone-confident"
+      | "fix-tone-friendly"
       | "change-tense-present"
       | "change-tense-past"
       | "change-tense-future"
@@ -71,10 +77,36 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
               <CheckCheck className="mr-2 h-4 w-4" />
               Fix Grammar
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction("fix-tone")}>
-              <VenetianMask className="mr-2 h-4 w-4" />
-              Professional Tone
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <VenetianMask className="mr-2 h-4 w-4" />
+                Change Tone
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => onAction("fix-tone-professional")}
+                >
+                  <CaseSensitive className="mr-2 h-4 w-4" />
+                  Professional
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onAction("fix-tone-casual")}>
+                  <Smile className="mr-2 h-4 w-4" />
+                  Casual
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onAction("fix-tone-confident")}
+                >
+                  <Rocket className="mr-2 h-4 w-4" />
+                  Confident
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onAction("fix-tone-friendly")}
+                >
+                  <Smile className="mr-2 h-4 w-4" />
+                  Friendly
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Clock className="mr-2 h-4 w-4" />

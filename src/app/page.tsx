@@ -171,7 +171,7 @@ export default function Home() {
     }
   };
 
-  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
+  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone-professional" | "fix-tone-casual" | "fix-tone-confident" | "fix-tone-friendly" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
     if (!selection || isLoading) return;
     setIsLoading(true);
 
@@ -181,6 +181,7 @@ export default function Home() {
     try {
       let result;
       let prompt;
+      let tone;
       switch (action) {
         case "improve":
           result = await improveWritingStyle({ text: currentSelection.text });
@@ -207,8 +208,12 @@ export default function Home() {
             selection: currentSelection,
           });
           break;
-        case "fix-tone":
-           prompt = `Make the tone of the following text more professional: "${currentSelection.text}"`;
+        case "fix-tone-professional":
+        case "fix-tone-casual":
+        case "fix-tone-confident":
+        case "fix-tone-friendly":
+           tone = action.split('-').pop();
+           prompt = `Make the tone of the following text more ${tone}: "${currentSelection.text}"`;
            result = await generateText({ prompt });
            setPreview({
             original: currentSelection.text,
