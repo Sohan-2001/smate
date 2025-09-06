@@ -171,7 +171,7 @@ export default function Home() {
     }
   };
 
-  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone" | "change-tense") => {
+  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
     if (!selection || isLoading) return;
     setIsLoading(true);
 
@@ -216,8 +216,26 @@ export default function Home() {
             selection: currentSelection,
           });
           break;
-        case "change-tense":
+        case "change-tense-present":
+           prompt = `Change the tense of the following text to present tense: "${currentSelection.text}"`;
+           result = await generateText({ prompt });
+           setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        case "change-tense-past":
            prompt = `Change the tense of the following text to past tense: "${currentSelection.text}"`;
+           result = await generateText({ prompt });
+           setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        case "change-tense-future":
+           prompt = `Change the tense of the following text to future tense: "${currentSelection.text}"`;
            result = await generateText({ prompt });
            setPreview({
             original: currentSelection.text,
