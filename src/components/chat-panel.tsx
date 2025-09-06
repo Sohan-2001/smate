@@ -15,15 +15,14 @@ type Message = {
 
 interface ChatPanelProps {
   onApplyToEditor: (content: string) => void;
-  isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
 }
 
-export function ChatPanel({ onApplyToEditor, isLoading, setIsLoading }: ChatPanelProps) {
+export function ChatPanel({ onApplyToEditor }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "ai", content: "Hello! How can I assist you today?" },
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +30,12 @@ export function ChatPanel({ onApplyToEditor, isLoading, setIsLoading }: ChatPane
 
     const userMessage: Message = { role: "user", content: chatInput };
     setMessages((prev) => [...prev, userMessage]);
+    const currentChatInput = chatInput;
     setChatInput("");
     setIsLoading(true);
 
     try {
-      const response = await generateText({ prompt: chatInput });
+      const response = await generateText({ prompt: currentChatInput });
       const aiMessage: Message = {
         role: "ai",
         content: response.generatedText,

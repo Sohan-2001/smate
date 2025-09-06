@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateText } from "@/ai/flows/generate-text-from-prompt";
 import { improveWritingStyle } from "@/ai/flows/improve-writing-style";
 import { summarizeSelectedText } from "@/ai/flows/summarize-selected-text";
+import { checkSpelling, type CheckSpellingOutput } from "@/ai/flows/check-spelling";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
@@ -31,6 +32,7 @@ type Preview = {
   original: string;
   suggestion: string;
   selection: Selection;
+  corrections?: CheckSpellingOutput['corrections'];
 };
 
 const placeholderContent = `Welcome to CollabEdit AI! Start typing, or select text to see AI actions. You can also use the AI assistant on the right.`;
@@ -53,6 +55,7 @@ export default function Home() {
     const target = e.currentTarget;
     const { selectionStart, selectionEnd } = target;
     const editor = editorRef.current;
+    const isMobile = window.innerWidth < 768;
 
     if (selectionStart !== selectionEnd && editor) {
       const selectedText = target.value.substring(selectionStart, selectionEnd);
@@ -61,9 +64,14 @@ export default function Home() {
         end: selectionEnd,
         text: selectedText,
       });
-      
+
       const isTouchEvent = 'touches' in e;
 
+      if (isMobile) {
+        setToolbarPosition({ top: editor.clientHeight / 2, left: editor.clientWidth / 2 - 125 });
+        return;
+      }
+      
       // The following logic is based on https://github.com/dianagu/get-cursor-position
       const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
       const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
@@ -172,13 +180,20 @@ export default function Home() {
           });
           break;
         case "check-spelling":
-          prompt = `Fix the spelling for the following text: "${currentSelection.text}"`;
-          result = await generateText({ prompt });
+          result = await checkSpelling({ text: currentSelection.text });
+          if (!result.hasCorrections) {
+            toast({
+              title: "No Spelling Errors Found",
+              description: "Everything looks correct!",
+            });
+          } else {
             setPreview({
-            original: currentSelection.text,
-            suggestion: result.generatedText,
-            selection: currentSelection,
-          });
+              original: currentSelection.text,
+              suggestion: result.correctedText,
+              selection: currentSelection,
+              corrections: result.corrections,
+            });
+          }
           break;
         case "fix-tone-professional":
         case "fix-tone-casual":
@@ -253,8 +268,6 @@ export default function Home() {
   const ChatPanelComponent = () => (
     <ChatPanel
         onApplyToEditor={handleApplyToEditor}
-        isLoading={isLoading}
-        setIsLoading={setIsLoading}
       />
   );
   
@@ -318,13 +331,10 @@ export default function Home() {
             onConfirm={handleConfirmEdit}
             originalText={preview.original}
             suggestedText={preview.suggestion}
+            corrections={preview.corrections}
           />
         )}
       </main>
     </div>
   );
 }
-
-    
-
-    
