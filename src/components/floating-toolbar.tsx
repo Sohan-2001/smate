@@ -16,6 +16,7 @@ import {
   Smile,
   Rocket,
   CaseSensitive,
+  SpellCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ interface FloatingToolbarProps {
       | "improve"
       | "summarize"
       | "fix-grammar"
+      | "check-spelling"
       | "fix-tone-professional"
       | "fix-tone-casual"
       | "fix-tone-confident"
@@ -76,6 +78,10 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
             <DropdownMenuItem onClick={() => onAction("fix-grammar")}>
               <CheckCheck className="mr-2 h-4 w-4" />
               Fix Grammar
+            </DropdownMenuItem>
+             <DropdownMenuItem onClick={() => onAction("check-spelling")}>
+              <SpellCheck className="mr-2 h-4 w-4" />
+              Check Spelling
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>

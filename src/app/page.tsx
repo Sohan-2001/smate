@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent, TouchEvent, useRef } from "react";
-import { Bot, Send, Sparkles, User, Wand2 } from "lucide-react";
+import { Bot, Send, Sparkles, SpellCheck, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -171,7 +171,7 @@ export default function Home() {
     }
   };
 
-  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "fix-tone-professional" | "fix-tone-casual" | "fix-tone-confident" | "fix-tone-friendly" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
+  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "check-spelling" | "fix-tone-professional" | "fix-tone-casual" | "fix-tone-confident" | "fix-tone-friendly" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
     if (!selection || isLoading) return;
     setIsLoading(true);
 
@@ -203,6 +203,15 @@ export default function Home() {
           prompt = `Fix the grammar and spelling for the following text: "${currentSelection.text}"`;
           result = await generateText({ prompt });
            setPreview({
+            original: currentSelection.text,
+            suggestion: result.generatedText,
+            selection: currentSelection,
+          });
+          break;
+        case "check-spelling":
+          prompt = `Fix the spelling for the following text: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+            setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
