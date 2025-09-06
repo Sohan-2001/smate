@@ -172,7 +172,7 @@ export default function Home() {
   };
 
   const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "check-spelling" | "fix-tone-professional" | "fix-tone-casual" | "fix-tone-confident" | "fix-tone-friendly" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
-    if (!selection || isLoading) return;
+    if (!selection) return;
     setIsLoading(true);
 
     const currentSelection = selection;
@@ -432,5 +432,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     
