@@ -77,9 +77,58 @@ export default function Home() {
 
       if (!isTouchEvent && editorRef.current) {
         const rect = editorRef.current.getBoundingClientRect();
-        const relativeX = e.clientX - rect.left;
-        const relativeY = e.clientY - rect.top;
-        setToolbarPosition({ top: relativeY - 40, left: relativeX });
+        
+        // The following logic is based on https://github.com/dianagu/get-cursor-position
+        const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
+        const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
+        
+        const div = document.createElement('div');
+        div.id = 'input-textarea-caret-position-mirror-div';
+        document.body.appendChild(div);
+        
+        const style = div.style;
+        const computed = window.getComputedStyle ? window.getComputedStyle(target) : (target as any).currentStyle;
+        const isInput = target.nodeName === 'INPUT';
+        
+        style.whiteSpace = 'pre-wrap';
+        if (!isInput) {
+            style.wordWrap = 'break-word';
+        }
+        
+        style.position = 'absolute';
+        style.visibility = 'hidden';
+        
+        properties.forEach(function (prop) {
+            style[prop as any] = computed[prop as any];
+        });
+
+        if (isFirefox) {
+            if (target.scrollHeight > parseInt(computed.height))
+                style.overflowY = 'scroll';
+        } else {
+            style.overflow = 'hidden';
+        }
+        
+        div.textContent = target.value.substring(0, selectionStart);
+        
+        if (isInput) {
+            div.textContent = div.textContent!.replace(/\s/g, '\u00a0');
+        }
+
+        const span = document.createElement('span');
+        span.textContent = target.value.substring(selectionStart) || '.';
+        div.appendChild(span);
+        
+        const { x, y } = target.getBoundingClientRect();
+        const top = span.offsetTop + parseInt(computed['borderTopWidth']) - target.scrollTop;
+        const left = span.offsetLeft + parseInt(computed['borderLeftWidth']);
+        
+        document.body.removeChild(div);
+        
+        setToolbarPosition({
+            top: top + 15,
+            left: left > rect.width ? rect.width : left,
+        });
       }
 
     } else {
