@@ -6,6 +6,7 @@ import { Wand2, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PreLoader } from "@/components/pre-loader";
 import { ModeToggle } from "@/components/mode-toggle";
+import { TypingAnimation } from "@/components/typing-animation";
 
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
@@ -42,16 +43,8 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 aurora-text">
             Your Smart Mate for Writing
           </h2>
-          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-            <p>
-              Turn {" "}
-              <span className="line-through text-red-400">
-                "Their going to the store."
-              </span>{" "}
-              into{" "}
-              <span className="text-green-400">"They're going to the store."</span>{" "}
-              with a single click.
-            </p>
+          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8 min-h-[56px] flex items-center justify-center">
+            <TypingAnimation />
           </div>
           <Link href="/editor">
             <Button size="lg">
