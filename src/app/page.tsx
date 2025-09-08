@@ -39,6 +39,7 @@ const Typewriter = ({
          setTimeout(() => {
           if (currentPhase.deleteChars && currentPhase.deleteChars > 0) {
             setIsDeleting(true);
+            setCharIndex(0); // Reset charIndex for deletion logic
           } else if (currentTextIndex < texts.length - 1) {
             setCurrentTextIndex(prev => prev + 1);
             setCharIndex(0);
@@ -64,9 +65,9 @@ const Typewriter = ({
             setCharIndex(0);
           }
         } else {
-            if (charIndex > textToAnimate.length - charsToDelete) {
-              setDisplayText(displayText.slice(0, -1));
-              setCharIndex(charIndex - 1);
+            if (charIndex < charsToDelete) {
+              setDisplayText(prev => prev.slice(0, -1));
+              setCharIndex(charIndex + 1);
             } else {
               setIsDeleting(false);
               setIsInserting(true);
@@ -101,8 +102,11 @@ const Typewriter = ({
     let timeoutSpeed = typingSpeed;
     if (isDeleting && currentPhase.deleteFromStart) {
         timeoutSpeed = 150;
+    } else if (isDeleting) {
+      timeoutSpeed = 50;
     }
 
+    if (hasAnimated) return;
     const typingTimeout = setTimeout(handleTyping, timeoutSpeed);
     return () => clearTimeout(typingTimeout);
 
