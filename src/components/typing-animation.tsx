@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 export const TypingAnimation = () => {
     const [text, setText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isCorrecting, setIsCorrecting] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
 
     const incorrectWord = "Right";
@@ -14,52 +13,45 @@ export const TypingAnimation = () => {
     const sentenceSuffix = " confidently, mistakes - we take care of that";
     const typingSpeed = 150;
     const deletingSpeed = 100;
-    const pauseBeforeDelete = 2000;
-    const pauseAfterCorrect = 3000;
+    const pauseBeforeDelete = 1500;
+    const pauseAfterCorrect = 2000;
 
     useEffect(() => {
         if (isFinished) return;
-        let typingTimeout: NodeJS.Timeout;
 
         const handleTyping = () => {
-            if (isDeleting) {
-                // Deleting "Right"
-                if (text.length > 0) {
-                    setText(currentText => currentText.substring(0, currentText.length - 1));
-                } else {
-                    setIsDeleting(false);
-                    setIsCorrecting(true);
-                }
-            } else if (isCorrecting) {
-                 // Typing "Write"
-                if (text.length < correctWord.length) {
-                    setText(correctWord.substring(0, text.length + 1));
-                } else {
-                     // Pause after correcting then finish
-                     setTimeout(() => {
-                        setIsFinished(true);
-                    }, pauseAfterCorrect);
-                }
-            }
-            else {
+            if (!isDeleting && text.length < incorrectWord.length) {
                 // Typing "Right"
-                if (text.length < incorrectWord.length) {
-                    setText(incorrectWord.substring(0, text.length + 1));
-                } else {
-                    // Pause before deleting
-                    setTimeout(() => setIsDeleting(true), pauseBeforeDelete);
-                }
+                setText(incorrectWord.substring(0, text.length + 1));
+            } else if (!isDeleting && text.length === incorrectWord.length) {
+                // Pause before deleting
+                setTimeout(() => setIsDeleting(true), pauseBeforeDelete);
+            } else if (isDeleting && text.length > 0) {
+                // Deleting "Right"
+                setText(currentText => currentText.substring(0, currentText.length - 1));
+            } else if (isDeleting && text.length === 0) {
+                // Start typing "Write"
+                setIsDeleting(false);
+            } else if (!isDeleting && text.length < correctWord.length) {
+                // Typing "Write"
+                setText(correctWord.substring(0, text.length + 1));
+            } else if (!isDeleting && text.length === correctWord.length) {
+                // Pause after correcting then finish
+                 setTimeout(() => {
+                    setIsFinished(true);
+                }, pauseAfterCorrect);
             }
         };
-        
-        const speed = isDeleting ? deletingSpeed : typingSpeed;
-        typingTimeout = setTimeout(handleTyping, speed);
 
-        return () => clearTimeout(typingTimeout);
-    }, [text, isDeleting, isCorrecting, isFinished]);
+        const speed = isDeleting ? deletingSpeed : typingSpeed;
+        const timeout = setTimeout(handleTyping, speed);
+
+        return () => clearTimeout(timeout);
+    }, [text, isDeleting, isFinished]);
     
 
-    const displayText = isFinished ? correctWord : text;
+    const displayText = text;
+    const isCorrecting = !isDeleting && text.length === 0 || (text.length > 0 && correctWord.startsWith(text));
 
     return (
         <p className="text-lg text-foreground/90">
@@ -68,7 +60,7 @@ export const TypingAnimation = () => {
                 isCorrecting || isFinished ? "text-green-500" : "text-red-500",
                 !isFinished && "highlighter-shadow"
             )}>
-                 {displayText}
+                 {isFinished ? correctWord : displayText}
                  {!isFinished && <span className="animate-pulse">|</span>}
             </span>
             {sentenceSuffix}
