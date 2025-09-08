@@ -22,7 +22,7 @@ const Background = () => {
             return (
                 <div
                     key={i}
-                    className="absolute text-foreground/10"
+                    className="absolute text-foreground/10 opacity-0"
                     style={
                         {
                             '--size': `${size}px`,
