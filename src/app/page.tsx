@@ -82,7 +82,7 @@ const Typewriter = ({
         const textToInsert = currentPhase.insert || '';
         if (charIndex < textToInsert.length) {
           if (currentPhase.deleteFromStart) {
-            setDisplayText(prev => textToInsert[charIndex] + prev);
+            setDisplayText(prev => textToInsert.substring(0, charIndex + 1) + prev);
           } else {
             setDisplayText(prev => prev + textToInsert[charIndex]);
           }
