@@ -9,57 +9,90 @@ const Typewriter = ({
   texts,
   className,
 }: {
-  texts: { text: string; pause: number; speed?: number; delete?: boolean }[];
+  texts: { text: string; pause: number; speed?: number; deleteChars?: number; insert?: string }[];
   className?: string;
 }) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInserting, setIsInserting] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
+    if (hasAnimated && texts.length > 1) return;
+
     const currentPhase = texts[currentTextIndex];
-    const textToType = currentPhase.text;
+    const textToAnimate = currentPhase.text;
     const typingSpeed = currentPhase.speed || 100;
 
     const handleTyping = () => {
+      // Typing out initial text
+      if (!isDeleting && !isInserting && charIndex < textToAnimate.length) {
+        setDisplayText(textToAnimate.substring(0, charIndex + 1));
+        setCharIndex(charIndex + 1);
+        return;
+      }
+      
+      // Pause after typing
+      if (!isDeleting && !isInserting && charIndex === textToAnimate.length) {
+         setTimeout(() => {
+          if (currentPhase.deleteChars && currentPhase.deleteChars > 0) {
+            setIsDeleting(true);
+          } else if (currentTextIndex < texts.length - 1) {
+            setCurrentTextIndex(prev => prev + 1);
+            setCharIndex(0);
+          } else {
+            setHasAnimated(true);
+          }
+        }, currentPhase.pause);
+        return;
+      }
+      
+      // Deleting characters
       if (isDeleting) {
-        if (charIndex > 0) {
-          setDisplayText(textToType.substring(0, charIndex - 1));
+        if (charIndex > textToAnimate.length - currentPhase.deleteChars!) {
+          setDisplayText(displayText.slice(0, -1));
           setCharIndex(charIndex - 1);
         } else {
           setIsDeleting(false);
-          setCurrentTextIndex((prev) => (prev + 1) % texts.length);
+          setIsInserting(true);
+          setCharIndex(0); 
         }
-      } else {
-        if (charIndex < textToType.length) {
-          setDisplayText(textToType.substring(0, charIndex + 1));
-          setCharIndex(charIndex + 1);
+        return;
+      }
+
+      // Inserting characters
+      if (isInserting) {
+        const textToInsert = currentPhase.insert || '';
+        if (charIndex < textToInsert.length) {
+           setDisplayText(prev => prev + textToInsert[charIndex]);
+           setCharIndex(charIndex + 1);
         } else {
-          setTimeout(() => {
-            if (currentPhase.delete) {
-              setIsDeleting(true);
-            } else {
+           setIsInserting(false);
+           if (currentTextIndex < texts.length - 1) {
+              setCurrentTextIndex(prev => prev + 1);
               setCharIndex(0);
-              setCurrentTextIndex((prev) => (prev + 1) % texts.length);
-            }
-          }, currentPhase.pause);
+           } else {
+              setHasAnimated(true);
+           }
         }
       }
     };
 
     const typingTimeout = setTimeout(handleTyping, typingSpeed);
-
     return () => clearTimeout(typingTimeout);
-  }, [charIndex, isDeleting, currentTextIndex, texts]);
+
+  }, [charIndex, isDeleting, isInserting, currentTextIndex, texts, displayText, hasAnimated]);
+
 
   return <span className={className}>{displayText}</span>;
 };
 
+
 export default function LandingPage() {
   const typewriterTexts = [
-    { text: "Right", pause: 500, delete: true },
-    { text: "Write confidently, mistakes - we take care of that", pause: 5000, speed: 50 },
+    { text: "Right confidently, mistakes - we take care of that", pause: 1000, speed: 50, deleteChars: 5, insert: 'Write' },
   ];
 
   return (
