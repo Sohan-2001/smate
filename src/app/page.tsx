@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Background } from "@/components/background";
+import { Bot, Edit, MousePointerClick } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Typewriter = ({
   texts,
@@ -48,7 +50,7 @@ const Typewriter = ({
         const charsToDelete = currentPhase.deleteChars!;
         
         if (charIndex < charsToDelete) {
-            setDisplayText(prev => prev.slice(1));
+            setDisplayText(prev => prev.slice(0, -1));
             setCharIndex(charIndex + 1);
         } else {
             setIsDeleting(false);
@@ -93,7 +95,6 @@ export default function LandingPage() {
       pause: 1000,
       deleteChars: 5, 
       insert: 'Write',
-      deleteFromStart: true 
     },
   ];
 
@@ -101,7 +102,7 @@ export default function LandingPage() {
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
       <Background />
 
-      <main className="z-10 flex flex-col items-center justify-center text-center">
+      <main className="z-10 flex flex-col items-center justify-center text-center p-4">
         <div className="glass-card flex flex-col items-center gap-6 p-8 sm:p-12 md:p-16">
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             Your Smart Mate for <span className="text-primary">Writing</span>
@@ -121,6 +122,62 @@ export default function LandingPage() {
             Powered by AI. Built for writers.
         </p>
       </main>
+
+      <section className="z-10 w-full max-w-5xl px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Features
+        </h2>
+        <p className="mt-4 text-lg text-foreground/80">
+          Everything you need to write better, faster.
+        </p>
+        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <Card className="glass-card text-left">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Edit className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl font-bold">Real-time Editor</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground/80">
+                Write and edit your documents seamlessly with a clean, intuitive, and powerful editor. Focus on your words, we'll handle the rest.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card text-left">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Bot className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl font-bold">AI Chat Assistant</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground/80">
+                Get help, ask questions, or generate content using the chat sidebar. Your creative partner is always just a click away.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card text-left">
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <MousePointerClick className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl font-bold">Contextual AI Actions</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground/80">
+                Select any piece of text to bring up a floating toolbar with AI-powered editing options like improving, summarizing, and more.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }
