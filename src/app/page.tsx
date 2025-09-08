@@ -39,7 +39,7 @@ export default function LandingPage() {
             <PenTool className="h-24 w-24 text-primary mx-auto" />
             <Wand2 className="absolute -top-2 -right-2 h-10 w-10 text-accent-foreground animate-pulse" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 aurora-text">
             Your Smart Mate for Writing
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
