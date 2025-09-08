@@ -58,7 +58,7 @@ export const TypingAnimation = () => {
         <p className="text-lg text-foreground/90">
             <span className={cn(
                 "font-medium transition-colors duration-300",
-                isCorrecting || isFinished ? "text-green-500" : "text-red-500",
+                isCorrecting || isFinished ? "text-green-400" : "text-red-400",
                 !isFinished && "highlighter-shadow"
             )}>
                  {isFinished ? correctWord : displayText}

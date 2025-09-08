@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Wand2, PenTool } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PreLoader } from "@/components/pre-loader";
 import { ModeToggle } from "@/components/mode-toggle";
 import { TypingAnimation } from "@/components/typing-animation";
+import { Background } from "@/components/background";
 
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
@@ -24,36 +25,37 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 bg-card">
-        <div className="flex items-center gap-3">
-          <Wand2 className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
-        </div>
+    <div className="flex flex-col min-h-dvh bg-background text-foreground">
+      <Background />
+      <header className="fixed top-0 left-0 right-0 z-50 flex h-20 items-center justify-between px-6 bg-transparent">
+        <Link href="/" className="flex items-center gap-3">
+          <Wand2 className="h-7 w-7 text-primary" />
+          <h1 className="text-2xl font-bold tracking-tight">SMATE</h1>
+        </Link>
         <div className="flex items-center gap-2">
           <ModeToggle />
         </div>
       </header>
-      <main className="flex-1 flex flex-col items-center justify-center text-center p-6">
-        <div className="animate-in fade-in-50 zoom-in-95 duration-500">
-          <div className="relative mb-8">
-            <PenTool className="h-24 w-24 text-primary mx-auto" />
-            <Wand2 className="absolute -top-2 -right-2 h-10 w-10 text-accent-foreground animate-pulse" />
+      <main className="flex-1 flex flex-col items-center justify-center text-center p-6 relative z-10">
+        <div className="animate-in fade-in-50 zoom-in-95 duration-700 w-full max-w-2xl">
+          <div className="relative bg-card/60 backdrop-blur-xl rounded-2xl p-8 md:p-12 shadow-2xl border border-white/10">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-12 border-t-2 border-l-2 border-r-2 border-primary/50 rounded-t-full o" />
+            
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+              Your Smart Mate for <span className="text-primary">Writing</span>
+            </h2>
+            <div className="text-lg text-muted-foreground mb-8 min-h-[28px] flex items-center justify-center">
+              <TypingAnimation />
+            </div>
+            <Link href="/editor">
+              <Button size="lg" className="px-10 py-6 text-lg">
+                Get Started
+              </Button>
+            </Link>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 aurora-text">
-            Your Smart Mate for Writing
-          </h2>
-          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-6 min-h-[28px] flex items-center justify-center">
-            <TypingAnimation />
-          </div>
-          <Link href="/editor">
-            <Button size="lg">
-              Get Started
-            </Button>
-          </Link>
         </div>
       </main>
-      <footer className="py-4 text-center text-sm text-muted-foreground">
+      <footer className="relative z-10 py-4 text-center text-sm text-muted-foreground">
         <p>Powered by AI. Built for writers.</p>
       </footer>
     </div>
