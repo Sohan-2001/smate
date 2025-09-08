@@ -41,7 +41,7 @@ export default function LandingPage() {
           <div className="relative bg-card/60 backdrop-blur-xl rounded-2xl p-8 md:p-12 shadow-2xl border border-white/10">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-12 border-t-2 border-l-2 border-r-2 border-primary/50 rounded-t-full o" />
             
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+            <h2 className="text-4xl font-bold tracking-tighter mb-4">
               Your Smart Mate for <span className="text-primary">Writing</span>
             </h2>
             <div className="text-lg text-muted-foreground mb-8 min-h-[28px] flex items-center justify-center">
