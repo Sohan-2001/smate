@@ -13,104 +13,73 @@ const Typewriter = ({
   className?: string;
 }) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
+  const [displayText, setDisplayText] = useState(texts.length > 0 ? texts[0].text : "");
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-
+  
+  // A one-time effect to kick off the animation after the initial text is shown.
   useEffect(() => {
-    if (hasAnimated && texts.length > 1) return;
+    if (hasAnimated || texts.length === 0) return;
 
     const currentPhase = texts[currentTextIndex];
-    const textToAnimate = currentPhase.text;
-    const typingSpeed = currentPhase.speed || 100;
-
-    const handleTyping = () => {
-      // Typing out initial text
-      if (!isDeleting && !isInserting && charIndex < textToAnimate.length) {
-        setDisplayText(textToAnimate.substring(0, charIndex + 1));
-        setCharIndex(charIndex + 1);
-        return;
-      }
-      
-      // Pause after typing
-      if (!isDeleting && !isInserting && charIndex === textToAnimate.length) {
-         setTimeout(() => {
-          if (currentPhase.deleteChars && currentPhase.deleteChars > 0) {
+    
+    const initialPauseTimeout = setTimeout(() => {
+        if (currentPhase.deleteChars && currentPhase.deleteChars > 0) {
             setIsDeleting(true);
-            setCharIndex(0); // Reset charIndex for deletion logic
-          } else if (currentTextIndex < texts.length - 1) {
-            setCurrentTextIndex(prev => prev + 1);
-            setCharIndex(0);
-          } else {
-            setHasAnimated(true);
-          }
-        }, currentPhase.pause);
-        return;
-      }
-      
+        }
+    }, currentPhase.pause);
+
+    return () => clearTimeout(initialPauseTimeout);
+  }, [hasAnimated, texts, currentTextIndex]);
+
+
+  useEffect(() => {
+    if (hasAnimated) return;
+
+    const currentPhase = texts[currentTextIndex];
+    let timeoutSpeed = 50;
+
+    const handleAnimation = () => {
       // Deleting characters
       if (isDeleting) {
+        timeoutSpeed = 150;
         const charsToDelete = currentPhase.deleteChars!;
-        const deleteFromStart = currentPhase.deleteFromStart;
         
-        if(deleteFromStart) {
-          if (charIndex < charsToDelete) {
+        if (charIndex < charsToDelete) {
             setDisplayText(prev => prev.slice(1));
             setCharIndex(charIndex + 1);
-          } else {
+        } else {
             setIsDeleting(false);
             setIsInserting(true);
-            setCharIndex(0);
-          }
-        } else {
-            if (charIndex < charsToDelete) {
-              setDisplayText(prev => prev.slice(0, -1));
-              setCharIndex(charIndex + 1);
-            } else {
-              setIsDeleting(false);
-              setIsInserting(true);
-              setCharIndex(0); 
-            }
+            setCharIndex(0); // Reset for insertion
         }
         return;
       }
 
       // Inserting characters
       if (isInserting) {
+        timeoutSpeed = 150;
         const textToInsert = currentPhase.insert || '';
+        const remainingText = currentPhase.text.substring(currentPhase.deleteChars || 0);
+
         if (charIndex < textToInsert.length) {
-          if (currentPhase.deleteFromStart) {
-            setDisplayText(prev => textToInsert.substring(0, charIndex + 1) + prev);
-          } else {
-            setDisplayText(prev => prev + textToInsert[charIndex]);
-          }
-          setCharIndex(charIndex + 1);
+            setDisplayText(textToInsert.substring(0, charIndex + 1) + remainingText);
+            setCharIndex(charIndex + 1);
         } else {
            setIsInserting(false);
-           if (currentTextIndex < texts.length - 1) {
-              setCurrentTextIndex(prev => prev + 1);
-              setCharIndex(0);
-           } else {
-              setHasAnimated(true);
-           }
+           setHasAnimated(true); // Animation is done.
         }
       }
     };
 
-    let timeoutSpeed = typingSpeed;
-    if (isDeleting && currentPhase.deleteFromStart) {
-        timeoutSpeed = 150;
-    } else if (isDeleting) {
-      timeoutSpeed = 50;
+    if (isDeleting || isInserting) {
+        const animationTimeout = setTimeout(handleAnimation, timeoutSpeed);
+        return () => clearTimeout(animationTimeout);
     }
 
-    if (hasAnimated) return;
-    const typingTimeout = setTimeout(handleTyping, timeoutSpeed);
-    return () => clearTimeout(typingTimeout);
-
-  }, [charIndex, isDeleting, isInserting, currentTextIndex, texts, displayText, hasAnimated]);
+  }, [charIndex, isDeleting, isInserting, currentTextIndex, texts, hasAnimated]);
 
 
   return <span className={className}>{displayText}</span>;
@@ -121,8 +90,7 @@ export default function LandingPage() {
   const typewriterTexts = [
     { 
       text: "Right confidently, mistakes - we take care of that", 
-      pause: 1000, 
-      speed: 50, 
+      pause: 1000,
       deleteChars: 5, 
       insert: 'Write',
       deleteFromStart: true 
