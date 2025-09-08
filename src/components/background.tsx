@@ -3,10 +3,12 @@
 import {
   Book,
   CheckCircle2,
+  FileText,
   MessageSquare,
   Pen,
   Sigma,
   Square,
+  Type,
 } from "lucide-react";
 
 export const Background = () => {
@@ -19,7 +21,8 @@ export const Background = () => {
       <Pen className="absolute top-[10%] left-[15%] h-8 w-8 text-foreground/20 -rotate-12" />
       <Book className="absolute top-[15%] right-[20%] h-8 w-8 text-foreground/20 rotate-6" />
       <MessageSquare className="absolute bottom-[25%] left-[10%] h-8 w-8 text-foreground/20 rotate-12" />
-      <Sigma className="absolute bottom-[10%] left-[25%] h-8 w-8 text-foreground/20" />
+      <Type className="absolute top-[55%] left-[25%] h-8 w-8 text-foreground/20" />
+      <FileText className="absolute bottom-[10%] left-[25%] h-8 w-8 text-foreground/20" />
       <CheckCircle2 className="absolute top-[30%] right-[10%] h-12 w-12 text-green-500/50" />
       <CheckCircle2 className="absolute bottom-[5%] right-[15%] h-10 w-10 text-primary/30" />
       <Square className="absolute bottom-[15%] right-[5%] h-6 w-6 text-foreground/10" />
