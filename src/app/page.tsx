@@ -42,10 +42,17 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 aurora-text">
             Your Smart Mate for Writing
           </h2>
-          <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-            Elevate your writing with an AI-powered editor. Get real-time
-            suggestions, fix grammar, change tone, and more.
-          </p>
+          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+            <p>
+              Turn {" "}
+              <span className="line-through text-red-400">
+                "Their going to the store."
+              </span>{" "}
+              into{" "}
+              <span className="text-green-400">"They're going to the store."</span>{" "}
+              with a single click.
+            </p>
+          </div>
           <Link href="/editor">
             <Button size="lg">
               Get Started
