@@ -43,7 +43,7 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 aurora-text">
             Your Smart Mate for Writing
           </h2>
-          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8 min-h-[56px] flex items-center justify-center">
+          <div className="max-w-2xl mx-auto text-lg text-muted-foreground mb-6 min-h-[28px] flex items-center justify-center">
             <TypingAnimation />
           </div>
           <Link href="/editor">

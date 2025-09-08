@@ -91,4 +91,8 @@
       background-position: -200% center;
     }
   }
+
+  .highlighter-shadow {
+    text-shadow: 0 0 1px currentColor;
+  }
 }

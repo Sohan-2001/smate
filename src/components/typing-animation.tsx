@@ -7,7 +7,7 @@ export const TypingAnimation = () => {
     const [text, setText] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
     const [isCorrecting, setIsCorrecting] = useState(false);
-    const [loopNum, setLoopNum] = useState(0);
+    const [isFinished, setIsFinished] = useState(false);
 
     const incorrectWord = "Right";
     const correctWord = "Write";
@@ -18,16 +18,15 @@ export const TypingAnimation = () => {
     const pauseAfterCorrect = 3000;
 
     useEffect(() => {
+        if (isFinished) return;
         let typingTimeout: NodeJS.Timeout;
 
         const handleTyping = () => {
-            const fullIncorrectSentence = incorrectWord + sentenceSuffix;
-            const fullCorrectSentence = correctWord + sentenceSuffix;
-
             if (isDeleting) {
                 // Deleting "Right"
-                setText(currentText => currentText.substring(0, currentText.length - 1));
-                if (text === "") {
+                if (text.length > 0) {
+                    setText(currentText => currentText.substring(0, currentText.length - 1));
+                } else {
                     setIsDeleting(false);
                     setIsCorrecting(true);
                 }
@@ -36,9 +35,9 @@ export const TypingAnimation = () => {
                 if (text.length < correctWord.length) {
                     setText(correctWord.substring(0, text.length + 1));
                 } else {
-                     // Pause after correcting
+                     // Pause after correcting then finish
                      setTimeout(() => {
-                        setLoopNum(loopNum + 1); // This will trigger the reset useEffect
+                        setIsFinished(true);
                     }, pauseAfterCorrect);
                 }
             }
@@ -53,31 +52,26 @@ export const TypingAnimation = () => {
             }
         };
         
-        const currentText = text;
         const speed = isDeleting ? deletingSpeed : typingSpeed;
         typingTimeout = setTimeout(handleTyping, speed);
 
         return () => clearTimeout(typingTimeout);
-    }, [text, isDeleting, isCorrecting, loopNum]);
+    }, [text, isDeleting, isCorrecting, isFinished]);
     
-    useEffect(() => {
-        // Reset for the next loop
-        setText('');
-        setIsDeleting(false);
-        setIsCorrecting(false);
-    }, [loopNum]);
 
+    const displayText = isFinished ? correctWord : text;
 
     return (
-        <p className="text-lg text-muted-foreground">
+        <p className="text-lg text-foreground/90">
             <span className={cn(
                 "font-medium transition-colors duration-300",
-                isCorrecting ? "text-green-400" : "text-red-400"
+                isCorrecting || isFinished ? "text-green-500" : "text-red-500",
+                !isFinished && "highlighter-shadow"
             )}>
-                 {text}
-                 <span className="animate-pulse">|</span>
+                 {displayText}
+                 {!isFinished && <span className="animate-pulse">|</span>}
             </span>
-            {isCorrecting ? sentenceSuffix : sentenceSuffix}
+            {sentenceSuffix}
         </p>
     );
 };
