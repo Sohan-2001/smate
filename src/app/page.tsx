@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Background } from "@/components/background";
-import { Bot, Edit, MousePointerClick } from "lucide-react";
+import { Bot, Edit, MousePointerClick, Wand2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const Typewriter = ({
   texts,
@@ -49,9 +50,8 @@ const Typewriter = ({
         timeoutSpeed = 150;
         const charsToDelete = currentPhase.deleteChars!;
         
-        if (charIndex < charsToDelete) {
+        if (displayText.length > (currentPhase.text.length - charsToDelete)) {
             setDisplayText(prev => prev.slice(0, -1));
-            setCharIndex(charIndex + 1);
         } else {
             setIsDeleting(false);
             setIsInserting(true);
@@ -76,12 +76,12 @@ const Typewriter = ({
       }
     };
 
-    if (isDeleting || isInserting) {
+    if ((isDeleting || isInserting) && !hasAnimated) {
         const animationTimeout = setTimeout(handleAnimation, timeoutSpeed);
         return () => clearTimeout(animationTimeout);
     }
 
-  }, [charIndex, isDeleting, isInserting, currentTextIndex, texts, hasAnimated]);
+  }, [displayText, charIndex, isDeleting, isInserting, currentTextIndex, texts, hasAnimated]);
 
 
   return <span className={className}>{displayText}</span>;
@@ -101,8 +101,22 @@ export default function LandingPage() {
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
       <Background />
+      <header className="fixed top-0 left-0 right-0 z-20 flex h-20 items-center justify-between px-6 bg-background/50 backdrop-blur-sm">
+        <Link href="/" className="flex items-center gap-3">
+            <Wand2 className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
+        </Link>
+        <div className="flex items-center gap-4">
+          <ModeToggle />
+          <Link href="/editor">
+            <Button>
+              Get Started
+            </Button>
+          </Link>
+        </div>
+      </header>
 
-      <main className="z-10 flex flex-col items-center justify-center text-center p-4">
+      <main className="z-10 flex flex-col items-center justify-center text-center p-4 mt-20">
         <div className="glass-card flex flex-col items-center gap-6 p-8 sm:p-12 md:p-16">
           <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             Your Smart Mate for <span className="text-primary">Writing</span>
