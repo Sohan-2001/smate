@@ -6,7 +6,6 @@ import {
   FileText,
   MessageSquare,
   Pen,
-  Sigma,
   Square,
   Type,
 } from "lucide-react";
