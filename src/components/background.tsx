@@ -1,13 +1,15 @@
 "use client";
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Book, MessageSquare, Pen, Type, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const icons = [Book, MessageSquare, Pen, Type, FileText];
 
 const Background = () => {
-    const particles = useMemo(() => {
-        return Array.from({ length: 30 }).map((_, i) => {
+    const [particles, setParticles] = useState<React.ReactNode[]>([]);
+
+    useEffect(() => {
+        const generatedParticles = Array.from({ length: 30 }).map((_, i) => {
             const Icon = icons[Math.floor(Math.random() * icons.length)];
             const size = Math.floor(Math.random() * 40) + 20;
             const duration = Math.random() * 20 + 20;
@@ -38,6 +40,7 @@ const Background = () => {
                 </div>
             );
         });
+        setParticles(generatedParticles);
     }, []);
 
     return (
