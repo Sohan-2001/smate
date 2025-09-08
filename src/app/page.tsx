@@ -9,7 +9,7 @@ const Typewriter = ({
   texts,
   className,
 }: {
-  texts: { text: string; pause: number; speed?: number; deleteChars?: number; insert?: string }[];
+  texts: { text: string; pause: number; speed?: number; deleteChars?: number; insert?: string; deleteFromStart?: boolean }[];
   className?: string;
 }) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -51,13 +51,27 @@ const Typewriter = ({
       
       // Deleting characters
       if (isDeleting) {
-        if (charIndex > textToAnimate.length - currentPhase.deleteChars!) {
-          setDisplayText(displayText.slice(0, -1));
-          setCharIndex(charIndex - 1);
+        const charsToDelete = currentPhase.deleteChars!;
+        const deleteFromStart = currentPhase.deleteFromStart;
+        
+        if(deleteFromStart) {
+          if (charIndex < charsToDelete) {
+            setDisplayText(prev => prev.slice(1));
+            setCharIndex(charIndex + 1);
+          } else {
+            setIsDeleting(false);
+            setIsInserting(true);
+            setCharIndex(0);
+          }
         } else {
-          setIsDeleting(false);
-          setIsInserting(true);
-          setCharIndex(0); 
+            if (charIndex > textToAnimate.length - charsToDelete) {
+              setDisplayText(displayText.slice(0, -1));
+              setCharIndex(charIndex - 1);
+            } else {
+              setIsDeleting(false);
+              setIsInserting(true);
+              setCharIndex(0); 
+            }
         }
         return;
       }
@@ -66,8 +80,12 @@ const Typewriter = ({
       if (isInserting) {
         const textToInsert = currentPhase.insert || '';
         if (charIndex < textToInsert.length) {
-           setDisplayText(prev => prev + textToInsert[charIndex]);
-           setCharIndex(charIndex + 1);
+          if (currentPhase.deleteFromStart) {
+            setDisplayText(prev => textToInsert[charIndex] + prev);
+          } else {
+            setDisplayText(prev => prev + textToInsert[charIndex]);
+          }
+          setCharIndex(charIndex + 1);
         } else {
            setIsInserting(false);
            if (currentTextIndex < texts.length - 1) {
@@ -80,7 +98,12 @@ const Typewriter = ({
       }
     };
 
-    const typingTimeout = setTimeout(handleTyping, typingSpeed);
+    let timeoutSpeed = typingSpeed;
+    if (isDeleting && currentPhase.deleteFromStart) {
+        timeoutSpeed = 150;
+    }
+
+    const typingTimeout = setTimeout(handleTyping, timeoutSpeed);
     return () => clearTimeout(typingTimeout);
 
   }, [charIndex, isDeleting, isInserting, currentTextIndex, texts, displayText, hasAnimated]);
@@ -92,7 +115,14 @@ const Typewriter = ({
 
 export default function LandingPage() {
   const typewriterTexts = [
-    { text: "Right confidently, mistakes - we take care of that", pause: 1000, speed: 50, deleteChars: 5, insert: 'Write' },
+    { 
+      text: "Right confidently, mistakes - we take care of that", 
+      pause: 1000, 
+      speed: 50, 
+      deleteChars: 5, 
+      insert: 'Write',
+      deleteFromStart: true 
+    },
   ];
 
   return (
