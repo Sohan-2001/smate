@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Background } from "@/components/background";
-import { Bot, Edit, MousePointerClick, Wand2 } from "lucide-react";
+import { Bot, Edit, MousePointerClick } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSwitch } from "@/components/theme-switch";
 
 const Typewriter = ({
   texts,
@@ -65,7 +65,7 @@ const Typewriter = ({
         timeoutSpeed = 150;
         const textToInsert = currentPhase.insert || '';
         const remainingText = currentPhase.text.substring(currentPhase.deleteChars || 0);
-
+        
         if (charIndex < textToInsert.length) {
             setDisplayText(textToInsert.substring(0, charIndex + 1) + remainingText);
             setCharIndex(charIndex + 1);
@@ -103,11 +103,10 @@ export default function LandingPage() {
       <Background />
       <header className="fixed top-0 left-0 right-0 z-20 flex h-20 items-center justify-between px-6 bg-background/50 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-3">
-            <Wand2 className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
         </Link>
         <div className="flex items-center gap-4">
-          <ModeToggle />
+          <ThemeSwitch />
           <Link href="/editor">
             <Button>
               Get Started
