@@ -9,9 +9,9 @@ export const TypingAnimation = () => {
     const [isCorrecting, setIsCorrecting] = useState(false);
     const [loopNum, setLoopNum] = useState(0);
 
-    const incorrectWord = "Their";
-    const correctWord = "They're";
-    const sentenceSuffix = " going to the store.";
+    const incorrectWord = "Right";
+    const correctWord = "Write";
+    const sentenceSuffix = " confidently, mistakes - we take care of that";
     const typingSpeed = 150;
     const deletingSpeed = 100;
     const pauseBeforeDelete = 2000;
@@ -21,44 +21,47 @@ export const TypingAnimation = () => {
         let typingTimeout: NodeJS.Timeout;
 
         const handleTyping = () => {
-            const currentWord = isCorrecting ? correctWord : incorrectWord;
+            const fullIncorrectSentence = incorrectWord + sentenceSuffix;
+            const fullCorrectSentence = correctWord + sentenceSuffix;
 
             if (isDeleting) {
-                // Deleting incorrect word
-                setText(currentWord.substring(0, text.length - 1));
+                // Deleting "Right"
+                setText(currentText => currentText.substring(0, currentText.length - 1));
                 if (text === "") {
                     setIsDeleting(false);
-                    setIsCorrecting(true); // Start correcting
+                    setIsCorrecting(true);
                 }
-            } else {
-                // Typing incorrect or correct word
-                setText(currentWord.substring(0, text.length + 1));
-
-                // Finished typing word
-                if (text === currentWord) {
-                    if (isCorrecting) {
-                        // Paused after correcting
-                        setTimeout(() => {
-                           // Reset for next loop
-                           setIsCorrecting(false);
-                           setLoopNum(loopNum + 1);
-                        }, pauseAfterCorrect);
-                    } else {
-                        // Paused before deleting
-                        setTimeout(() => setIsDeleting(true), pauseBeforeDelete);
-                    }
+            } else if (isCorrecting) {
+                 // Typing "Write"
+                if (text.length < correctWord.length) {
+                    setText(correctWord.substring(0, text.length + 1));
+                } else {
+                     // Pause after correcting
+                     setTimeout(() => {
+                        setLoopNum(loopNum + 1); // This will trigger the reset useEffect
+                    }, pauseAfterCorrect);
+                }
+            }
+            else {
+                // Typing "Right"
+                if (text.length < incorrectWord.length) {
+                    setText(incorrectWord.substring(0, text.length + 1));
+                } else {
+                    // Pause before deleting
+                    setTimeout(() => setIsDeleting(true), pauseBeforeDelete);
                 }
             }
         };
         
-        // This sets the speed of typing/deleting
-        typingTimeout = setTimeout(handleTyping, isDeleting ? deletingSpeed : typingSpeed);
+        const currentText = text;
+        const speed = isDeleting ? deletingSpeed : typingSpeed;
+        typingTimeout = setTimeout(handleTyping, speed);
 
         return () => clearTimeout(typingTimeout);
     }, [text, isDeleting, isCorrecting, loopNum]);
     
     useEffect(() => {
-        // Initial state for each loop
+        // Reset for the next loop
         setText('');
         setIsDeleting(false);
         setIsCorrecting(false);
@@ -67,15 +70,14 @@ export const TypingAnimation = () => {
 
     return (
         <p className="text-lg text-muted-foreground">
-            Turn{" "}
             <span className={cn(
                 "font-medium transition-colors duration-300",
                 isCorrecting ? "text-green-400" : "text-red-400"
             )}>
-                 &quot;{text}<span className="animate-pulse">|</span>{sentenceSuffix}&quot;
+                 {text}
+                 <span className="animate-pulse">|</span>
             </span>
-            {" "}
-            into the right one with a single click.
+            {isCorrecting ? sentenceSuffix : sentenceSuffix}
         </p>
     );
 };
