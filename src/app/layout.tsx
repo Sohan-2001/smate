@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
+import { UserProvider } from '@/context/user-context';
 
 export const metadata: Metadata = {
   title: 'SMATE',
@@ -35,7 +36,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <UserProvider>
+            {children}
+          </UserProvider>
         </ThemeProvider>
         <Toaster />
       </body>

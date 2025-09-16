@@ -21,53 +21,50 @@ const Typewriter = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-  
-  // A one-time effect to kick off the animation after the initial text is shown.
+
   useEffect(() => {
     if (hasAnimated || texts.length === 0) return;
 
     const currentPhase = texts[currentTextIndex];
-    
+
     const initialPauseTimeout = setTimeout(() => {
         if (currentPhase.deleteChars && currentPhase.deleteChars > 0) {
             setIsDeleting(true);
+            setCharIndex(currentPhase.text.length);
         }
     }, currentPhase.pause);
 
     return () => clearTimeout(initialPauseTimeout);
   }, [hasAnimated, texts, currentTextIndex]);
 
-
   useEffect(() => {
     if (hasAnimated) return;
 
     const currentPhase = texts[currentTextIndex];
-    let timeoutSpeed = 50;
+    let timeoutSpeed = 150;
 
     const handleAnimation = () => {
-      // Deleting characters
+      // Deleting characters from the start
       if (isDeleting) {
-        timeoutSpeed = 150;
-        const charsToDelete = currentPhase.deleteChars!;
-        
-        if (displayText.length > (currentPhase.text.length - charsToDelete)) {
-            setDisplayText(prev => prev.slice(0, -1));
+        if (charIndex > currentPhase.text.length - (currentPhase.deleteChars || 0)) {
+            setDisplayText(prev => prev.slice(1));
+            setCharIndex(charIndex - 1);
         } else {
             setIsDeleting(false);
             setIsInserting(true);
-            setCharIndex(0); // Reset for insertion
+            setCharIndex(0);
+            setDisplayText(currentPhase.text.substring(currentPhase.deleteChars || 0));
         }
         return;
       }
 
-      // Inserting characters
+      // Inserting characters at the start
       if (isInserting) {
-        timeoutSpeed = 150;
         const textToInsert = currentPhase.insert || '';
-        const remainingText = currentPhase.text.substring(currentPhase.deleteChars || 0);
+        const restOfText = currentPhase.text.substring(currentPhase.deleteChars || 0);
         
         if (charIndex < textToInsert.length) {
-            setDisplayText(textToInsert.substring(0, charIndex + 1) + remainingText);
+            setDisplayText(textToInsert.substring(0, charIndex + 1) + restOfText);
             setCharIndex(charIndex + 1);
         } else {
            setIsInserting(false);
@@ -107,7 +104,7 @@ export default function LandingPage() {
         </Link>
         <div className="flex items-center gap-4">
           <ThemeSwitch />
-          <Link href="/editor">
+          <Link href="/auth">
             <Button>
               Get Started
             </Button>
@@ -125,7 +122,7 @@ export default function LandingPage() {
              <Typewriter texts={typewriterTexts} />
           </p>
 
-          <Link href="/editor">
+          <Link href="/auth">
             <Button size="lg" className="mt-4">
               Get Started
             </Button>

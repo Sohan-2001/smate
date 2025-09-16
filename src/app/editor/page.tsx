@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent, TouchEvent, useRef } from "react";
-import { Bot, Wand2 } from "lucide-react";
+import { Bot, LogOut, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +9,10 @@ import { generateText } from "@/ai/flows/generate-text-from-prompt";
 import { improveWritingStyle } from "@/ai/flows/improve-writing-style";
 import { summarizeSelectedText } from "@/ai/flows/summarize-selected-text";
 import { checkSpelling, type CheckSpellingOutput } from "@/ai/flows/check-spelling";
+import { withAuth } from "@/components/with-auth";
+import { useUser } from "@/context/user-context";
+import { getAuth, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
@@ -19,10 +23,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatPanel } from "@/components/chat-panel";
 import { LoaderOverlay } from "@/components/loader-overlay";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Selection = {
   start: number;
@@ -39,7 +52,7 @@ type Preview = {
 
 const placeholderContent = `Start writing...`;
 
-export default function EditorPage() {
+function EditorPage() {
   const { toast } = useToast();
   const [editorContent, setEditorContent] = useState('');
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -50,6 +63,25 @@ export default function EditorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  const { user } = useUser();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      router.push('/auth');
+    } catch (error) {
+      console.error('Sign out error', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign Out Error',
+        description: 'Failed to sign out. Please try again.'
+      });
+    }
+  }
+
 
   const handleSelection = (
     e: MouseEvent<HTMLTextAreaElement> | TouchEvent<HTMLTextAreaElement>
@@ -74,7 +106,6 @@ export default function EditorPage() {
         return;
       }
       
-      // The following logic is based on https://github.com/dianagu/get-cursor-position
       const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
       const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
       
@@ -284,8 +315,33 @@ export default function EditorPage() {
             <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <ModeToggle />
+           <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
+                  <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user?.displayName || 'User'}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="md:hidden">
               <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
                   <SheetTrigger asChild>
@@ -343,3 +399,5 @@ export default function EditorPage() {
     </div>
   );
 }
+
+export default withAuth(EditorPage);
