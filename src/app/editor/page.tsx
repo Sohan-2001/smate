@@ -643,7 +643,7 @@ function EditorPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Upgrade to Pro</AlertDialogTitle>
             <AlertDialogDescription>
-              You've reached the limit of the free plan. Upgrade to a Pro plan for unlimited access and more features.
+              You've reached the limit of the free plan. Upgrade to a Pro plan for unlimited access and more features. Get it for just Rs. 99/month. No auto-pay.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
