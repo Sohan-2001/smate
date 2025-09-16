@@ -1,19 +1,29 @@
 "use client";
 
-import { useState, type MouseEvent, TouchEvent, useRef, useEffect } from "react";
-import { Bot, LogOut, User, Wand2 } from "lucide-react";
+import {
+  useState,
+  type MouseEvent,
+  TouchEvent,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
+import { Bot, LogOut, Redo, Undo, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { generateText } from "@/ai/flows/generate-text-from-prompt";
 import { improveWritingStyle } from "@/ai/flows/improve-writing-style";
 import { summarizeSelectedText } from "@/ai/flows/summarize-selected-text";
-import { checkSpelling, type CheckSpellingOutput } from "@/ai/flows/check-spelling";
+import {
+  checkSpelling,
+  type CheckSpellingOutput,
+} from "@/ai/flows/check-spelling";
 import { withAuth } from "@/components/with-auth";
 import { useUser } from "@/context/user-context";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { database } from '@/lib/firebase';
+import { database } from "@/lib/firebase";
 import { ref, onValue, set, off } from "firebase/database";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
@@ -32,12 +42,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatPanel, type Message } from "@/components/chat-panel";
 import { LoaderOverlay } from "@/components/loader-overlay";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEditorHistory } from "@/hooks/use-editor-history";
 
 type Selection = {
   start: number;
@@ -49,15 +60,24 @@ type Preview = {
   original: string;
   suggestion: string;
   selection: Selection;
-  corrections?: CheckSpellingOutput['corrections'];
+  corrections?: CheckSpellingOutput["corrections"];
 };
 
 const placeholderContent = `Start writing...`;
 
 function EditorPage() {
   const { toast } = useToast();
-  const [editorContent, setEditorContent] = useState('');
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const { user } = useUser();
+
+  const {
+    content,
+    setContent,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useEditorHistory({ userId: user?.uid });
 
   const [selection, setSelection] = useState<Selection | null>(null);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
@@ -65,69 +85,56 @@ function EditorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  
-  const { user } = useUser();
+
   const router = useRouter();
 
   const [messages, setMessages] = useState<Message[]>([
     { role: "ai", content: "Hello! How can I assist you today?" },
   ]);
 
-  // Load data from Firebase
+  // Load chat messages from Firebase
   useEffect(() => {
     if (user) {
-      const userRef = ref(database, `users/${user.uid}`);
+      const userChatRef = ref(database, `users/${user.uid}/chatMessages`);
       const onDataChange = (snapshot: any) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          setEditorContent(data.editorContent || '');
-          setMessages(data.chatMessages || [{ role: "ai", content: "Hello! How can I assist you today?" }]);
+          setMessages(
+            data || [{ role: "ai", content: "Hello! How can I assist you today?" }]
+          );
         }
       };
-      onValue(userRef, onDataChange);
+      onValue(userChatRef, onDataChange);
 
       return () => {
-        off(userRef, 'value', onDataChange);
+        off(userChatRef, "value", onDataChange);
       };
     }
   }, [user]);
 
-  // Save editor content to Firebase
-  useEffect(() => {
-    if (user) {
-      const editorRef = ref(database, `users/${user.uid}/editorContent`);
-      const debounceSave = setTimeout(() => {
-        set(editorRef, editorContent);
-      }, 500); // Debounce to avoid excessive writes
-
-      return () => clearTimeout(debounceSave);
-    }
-  }, [editorContent, user]);
-
   // Save chat messages to Firebase
   useEffect(() => {
-    if (user && messages.length > 1) { // Avoid saving initial message
+    if (user && messages.length > 1) {
+      // Avoid saving initial message
       const messagesRef = ref(database, `users/${user.uid}/chatMessages`);
       set(messagesRef, messages);
     }
   }, [messages, user]);
 
-
   const handleSignOut = async () => {
     const auth = getAuth();
     try {
       await signOut(auth);
-      router.push('/auth');
+      router.push("/auth");
     } catch (error) {
-      console.error('Sign out error', error);
+      console.error("Sign out error", error);
       toast({
-        variant: 'destructive',
-        title: 'Sign Out Error',
-        description: 'Failed to sign out. Please try again.'
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "Failed to sign out. Please try again.",
       });
     }
-  }
-
+  };
 
   const handleSelection = (
     e: MouseEvent<HTMLTextAreaElement> | TouchEvent<HTMLTextAreaElement>
@@ -145,73 +152,108 @@ function EditorPage() {
         text: selectedText,
       });
 
-      const isTouchEvent = 'touches' in e;
+      const isTouchEvent = "touches" in e;
 
       if (isMobile) {
-        setToolbarPosition({ top: editor.clientHeight / 2, left: editor.clientWidth / 2 - 125 });
+        setToolbarPosition({
+          top: editor.clientHeight / 2,
+          left: editor.clientWidth / 2 - 125,
+        });
         return;
       }
-      
-      const properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX', 'overflowY', 'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch', 'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily', 'textAlign', 'textTransform', 'textIndent', 'textDecoration', 'letterSpacing', 'wordSpacing', 'tabSize', 'MozTabSize'];
-      const isFirefox = typeof (window as any).mozInnerScreenX !== 'undefined';
-      
-      const div = document.createElement('div');
-      div.id = 'input-textarea-caret-position-mirror-div';
+
+      const properties = [
+        "direction",
+        "boxSizing",
+        "width",
+        "height",
+        "overflowX",
+        "overflowY",
+        "borderTopWidth",
+        "borderRightWidth",
+        "borderBottomWidth",
+        "borderLeftWidth",
+        "paddingTop",
+        "paddingRight",
+        "paddingBottom",
+        "paddingLeft",
+        "fontStyle",
+        "fontVariant",
+        "fontWeight",
+        "fontStretch",
+        "fontSize",
+        "fontSizeAdjust",
+        "lineHeight",
+        "fontFamily",
+        "textAlign",
+        "textTransform",
+        "textIndent",
+        "textDecoration",
+        "letterSpacing",
+        "wordSpacing",
+        "tabSize",
+        "MozTabSize",
+      ];
+      const isFirefox = typeof (window as any).mozInnerScreenX !== "undefined";
+
+      const div = document.createElement("div");
+      div.id = "input-textarea-caret-position-mirror-div";
       document.body.appendChild(div);
-      
+
       const style = div.style;
-      const computed = window.getComputedStyle ? window.getComputedStyle(target) : (target as any).currentStyle;
-      const isInput = target.nodeName === 'INPUT';
-      
-      style.whiteSpace = 'pre-wrap';
+      const computed = window.getComputedStyle
+        ? window.getComputedStyle(target)
+        : (target as any).currentStyle;
+      const isInput = target.nodeName === "INPUT";
+
+      style.whiteSpace = "pre-wrap";
       if (!isInput) {
-          style.wordWrap = 'break-word';
+        style.wordWrap = "break-word";
       }
-      
-      style.position = 'absolute';
-      style.visibility = 'hidden';
-      
+
+      style.position = "absolute";
+      style.visibility = "hidden";
+
       properties.forEach(function (prop) {
-          style[prop as any] = computed[prop as any];
+        style[prop as any] = computed[prop as any];
       });
 
       if (isFirefox) {
-          if (target.scrollHeight > parseInt(computed.height))
-              style.overflowY = 'scroll';
+        if (target.scrollHeight > parseInt(computed.height))
+          style.overflowY = "scroll";
       } else {
-          style.overflow = 'hidden';
-      }
-      
-      div.textContent = target.value.substring(0, selectionStart);
-      
-      if (isInput) {
-          div.textContent = div.textContent!.replace(/\s/g, '\u00a0');
+        style.overflow = "hidden";
       }
 
-      const span = document.createElement('span');
-      span.textContent = target.value.substring(selectionStart) || '.';
+      div.textContent = target.value.substring(0, selectionStart);
+
+      if (isInput) {
+        div.textContent = div.textContent!.replace(/\s/g, "\u00a0");
+      }
+
+      const span = document.createElement("span");
+      span.textContent = target.value.substring(selectionStart) || ".";
       div.appendChild(span);
-      
+
       const { x, y } = target.getBoundingClientRect();
-      const top = span.offsetTop + parseInt(computed['borderTopWidth']) - target.scrollTop;
-      const left = span.offsetLeft + parseInt(computed['borderLeftWidth']);
-      
+      const top =
+        span.offsetTop + parseInt(computed["borderTopWidth"]) - target.scrollTop;
+      const left = span.offsetLeft + parseInt(computed["borderLeftWidth"]);
+
       document.body.removeChild(div);
-      
+
       const editorRect = editor.getBoundingClientRect();
       const relativeTop = top + 15;
       const relativeLeft = left;
 
       setToolbarPosition({
-          top: Math.min(relativeTop, editorRect.height - 60),
-          left: Math.min(relativeLeft, editorRect.width - 250),
+        top: Math.min(relativeTop, editorRect.height - 60),
+        left: Math.min(relativeLeft, editorRect.width - 250),
       });
-
     } else {
       setSelection(null);
     }
   };
-
 
   const handleMouseUp = (e: MouseEvent<HTMLTextAreaElement>) => {
     handleSelection(e);
@@ -221,7 +263,20 @@ function EditorPage() {
     handleSelection(e);
   };
 
-  const handleToolbarAction = async (action: "improve" | "summarize" | "fix-grammar" | "check-spelling" | "fix-tone-professional" | "fix-tone-casual" | "fix-tone-confident" | "fix-tone-friendly" | "change-tense-present" | "change-tense-past" | "change-tense-future") => {
+  const handleToolbarAction = async (
+    action:
+      | "improve"
+      | "summarize"
+      | "fix-grammar"
+      | "check-spelling"
+      | "fix-tone-professional"
+      | "fix-tone-casual"
+      | "fix-tone-confident"
+      | "fix-tone-friendly"
+      | "change-tense-present"
+      | "change-tense-past"
+      | "change-tense-future"
+  ) => {
     if (!selection) return;
     setIsLoading(true);
 
@@ -242,7 +297,9 @@ function EditorPage() {
           });
           break;
         case "summarize":
-          result = await summarizeSelectedText({ selectedText: currentSelection.text });
+          result = await summarizeSelectedText({
+            selectedText: currentSelection.text,
+          });
           setPreview({
             original: currentSelection.text,
             suggestion: result.summary,
@@ -252,7 +309,7 @@ function EditorPage() {
         case "fix-grammar":
           prompt = `Fix the grammar and spelling for the following text: "${currentSelection.text}"`;
           result = await generateText({ prompt });
-           setPreview({
+          setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
@@ -278,37 +335,37 @@ function EditorPage() {
         case "fix-tone-casual":
         case "fix-tone-confident":
         case "fix-tone-friendly":
-           tone = action.split('-').pop();
-           prompt = `Make the tone of the following text more ${tone}: "${currentSelection.text}"`;
-           result = await generateText({ prompt });
-           setPreview({
+          tone = action.split("-").pop();
+          prompt = `Make the tone of the following text more ${tone}: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+          setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
           });
           break;
         case "change-tense-present":
-           prompt = `Change the tense of the following text to present tense: "${currentSelection.text}"`;
-           result = await generateText({ prompt });
-           setPreview({
+          prompt = `Change the tense of the following text to present tense: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+          setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
           });
           break;
         case "change-tense-past":
-           prompt = `Change the tense of the following text to past tense: "${currentSelection.text}"`;
-           result = await generateText({ prompt });
-           setPreview({
+          prompt = `Change the tense of the following text to past tense: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+          setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
           });
           break;
         case "change-tense-future":
-           prompt = `Change the tense of the following text to future tense: "${currentSelection.text}"`;
-           result = await generateText({ prompt });
-           setPreview({
+          prompt = `Change the tense of the following text to future tense: "${currentSelection.text}"`;
+          result = await generateText({ prompt });
+          setPreview({
             original: currentSelection.text,
             suggestion: result.generatedText,
             selection: currentSelection,
@@ -322,7 +379,7 @@ function EditorPage() {
       toast({
         variant: "destructive",
         title: "AI Error",
-        description: `Failed to ${action.replace('-', ' ')} text.`,
+        description: `Failed to ${action.replace("-", " ")} text.`,
       });
     } finally {
       setIsLoading(false);
@@ -333,25 +390,37 @@ function EditorPage() {
     if (!preview) return;
     const { suggestion, selection: editSelection } = preview;
     const newContent =
-      editorContent.substring(0, editSelection.start) +
+      content.substring(0, editSelection.start) +
       suggestion +
-      editorContent.substring(editSelection.end);
-    setEditorContent(newContent);
+      content.substring(editSelection.end);
+    setContent(newContent);
     setPreview(null);
   };
 
-  const handleApplyToEditor = (content: string) => {
-    setEditorContent((prevContent) => prevContent + "\n\n" + content);
+  const handleApplyToEditor = (newContent: string) => {
+    setContent((prevContent) => prevContent + "\n\n" + newContent);
   };
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    },
+    [undo, redo]
+  );
 
   const ChatPanelComponent = () => (
     <ChatPanel
-        messages={messages}
-        setMessages={setMessages}
-        onApplyToEditor={handleApplyToEditor}
-      />
+      messages={messages}
+      setMessages={setMessages}
+      onApplyToEditor={handleApplyToEditor}
+    />
   );
-  
 
   return (
     <div className="flex h-screen w-full flex-col bg-background">
@@ -363,21 +432,36 @@ function EditorPage() {
             <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
           </Link>
         </div>
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} aria-label="Undo">
+                <Undo className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} aria-label="Redo">
+                <Redo className="h-4 w-4" />
+            </Button>
+        </div>
         <div className="flex items-center gap-4">
           <ModeToggle />
-           <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} />
-                  <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarImage
+                    src={user?.photoURL || ""}
+                    alt={user?.displayName || ""}
+                  />
+                  <AvatarFallback>
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.displayName || 'User'}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user?.displayName || "User"}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
@@ -391,22 +475,25 @@ function EditorPage() {
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="md:hidden">
-              <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
-                  <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                          <Bot className="h-6 w-6" />
-                          <span className="sr-only">Toggle AI Assistant</span>
-                      </Button>
-                  </SheetTrigger>
-                  <SheetContent className="w-full max-w-sm p-0 flex flex-col" side="right">
-                      <SheetHeader className="p-4 border-b">
-                          <SheetTitle className="flex items-center gap-2 text-lg">
-                             <Bot /> AI Assistant
-                          </SheetTitle>
-                      </SheetHeader>
-                      <ChatPanelComponent />
-                  </SheetContent>
-              </Sheet>
+            <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Bot className="h-6 w-6" />
+                  <span className="sr-only">Toggle AI Assistant</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                className="w-full max-w-sm p-0 flex flex-col"
+                side="right"
+              >
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle className="flex items-center gap-2 text-lg">
+                    <Bot /> AI Assistant
+                  </SheetTitle>
+                </SheetHeader>
+                <ChatPanelComponent />
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
@@ -414,10 +501,11 @@ function EditorPage() {
         <div className="flex-1 relative p-4 md:p-6">
           <Textarea
             ref={editorRef}
-            value={editorContent}
-            onChange={(e) => setEditorContent(e.target.value)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             onMouseUp={handleMouseUp}
             onTouchEnd={handleTouchEnd}
+            onKeyDown={handleKeyDown}
             placeholder={placeholderContent}
             className="h-full w-full resize-none rounded-lg border bg-card p-4 text-base shadow-sm focus-visible:ring-primary"
           />
