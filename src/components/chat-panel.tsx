@@ -70,7 +70,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
     try {
       // Increment chat count in Firebase
       const userUsageRef = ref(database, `users/${user.uid}/usage`);
-      await set({ ...userData, chatCount: userData.chatCount + 1 });
+      await set(userUsageRef, { ...userData, chatCount: userData.chatCount + 1 });
       
       const response = await generateText({ prompt: currentChatInput });
       const aiMessage: Message = {
