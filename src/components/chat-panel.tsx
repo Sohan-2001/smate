@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Send, Sparkles, User, Zap } from "lucide-react";
+import { MessageSquare, Send, Sparkles, User, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -99,7 +99,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-lg">
           <div className="flex items-center gap-2">
-           <Bot /> AI Assistant
+           <MessageSquare /> AI Assistant
           </div>
           <div className="text-sm font-normal text-muted-foreground">
             {chatsRemaining} / {chatLimit}
@@ -117,7 +117,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
             >
               {msg.role === "ai" && (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <Bot className="h-5 w-5" />
+                  <MessageSquare className="h-5 w-5" />
                 </div>
               )}
               <div
@@ -149,7 +149,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           {isLoading && (
             <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
-                <Bot className="h-5 w-5" />
+                <MessageSquare className="h-5 w-5" />
               </div>
               <div className="rounded-lg bg-muted p-3 text-sm flex items-center gap-2">
                 <Sparkles className="h-4 w-4 animate-spin" /> Thinking...

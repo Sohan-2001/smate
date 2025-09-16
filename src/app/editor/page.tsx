@@ -9,7 +9,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { Bot, LogOut, Redo, Undo, Wand2, Zap } from "lucide-react";
+import { LogOut, Redo, Undo, Wand2, Zap, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +43,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { ChatPanel, type Message } from "@/components/chat-panel";
@@ -527,10 +530,9 @@ function EditorPage() {
       {isLoading && <LoaderOverlay />}
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 bg-card">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <Wand2 className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
-          </Link>
+            <Link href="/" className="flex items-center gap-3">
+                <Wand2 className="h-6 w-6 text-primary" />
+            </Link>
         </div>
         <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} aria-label="Undo">
@@ -547,7 +549,6 @@ function EditorPage() {
               Subscribe
             </Button>
           )}
-          <ModeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -574,6 +575,13 @@ function EditorPage() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    <ModeToggle />
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
@@ -584,7 +592,7 @@ function EditorPage() {
             <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <Bot className="h-6 w-6" />
+                  <MessageSquare className="h-6 w-6" />
                   <span className="sr-only">Toggle AI Assistant</span>
                 </Button>
               </SheetTrigger>
@@ -594,7 +602,7 @@ function EditorPage() {
               >
                 <SheetHeader className="p-4 border-b">
                   <SheetTitle className="flex items-center gap-2 text-lg">
-                    <Bot /> AI Assistant
+                    <MessageSquare /> AI Assistant
                   </SheetTitle>
                 </SheetHeader>
                 <ChatPanelComponent />
@@ -663,8 +671,3 @@ function EditorPage() {
 }
 
 export default withAuth(EditorPage);
-
-    
-    
-
-    
