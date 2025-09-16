@@ -43,11 +43,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSwitch } from "@/components/theme-switch";
 import { ChatPanel, type Message } from "@/components/chat-panel";
 import { LoaderOverlay } from "@/components/loader-overlay";
 import Link from "next/link";
@@ -450,7 +447,7 @@ function EditorPage() {
   };
 
   const handleApplyToEditor = (newContent: string) => {
-    setContent((prevContent) => prevContent + "\n\n" + newContent);
+    setContent((prevContent) => (prevContent || '') + "\n\n" + newContent);
   };
 
   const handleKeyDown = useCallback(
@@ -575,12 +572,12 @@ function EditorPage() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                    <ModeToggle />
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="focus:bg-transparent"
+              >
+                <ThemeSwitch />
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
