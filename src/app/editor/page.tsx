@@ -607,7 +607,7 @@ function EditorPage() {
         <div className="flex-1 relative p-4 md:p-6">
           <Textarea
             ref={editorRef}
-            value={content}
+            value={content || ''}
             onChange={(e) => setContent(e.target.value)}
             onMouseUp={handleMouseUp}
             onTouchEnd={handleTouchEnd}
@@ -664,4 +664,5 @@ function EditorPage() {
 
 export default withAuth(EditorPage);
 
+    
     
