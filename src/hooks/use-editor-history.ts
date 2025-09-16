@@ -93,14 +93,15 @@ export const useEditorHistory = ({ userId }: { userId?: string }) => {
   }, [state, userId, isLoaded]);
 
 
-  const setContent = useCallback((newPresent: string) => {
+  const setContent = useCallback((newPresent: string | ((prevState: string) => string)) => {
     setState(currentState => {
-      if (newPresent === currentState.present) {
+      const newContent = typeof newPresent === 'function' ? newPresent(currentState.present) : newPresent;
+      if (newContent === currentState.present) {
         return currentState;
       }
       return {
         past: [...currentState.past, currentState.present],
-        present: newPresent,
+        present: newContent,
         future: [],
       };
     });
