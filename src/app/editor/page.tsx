@@ -165,7 +165,7 @@ function EditorPage() {
         setUserData(newUserData);
       }
     };
-    onValue(userRef, 'value', onDataChange);
+    onValue(userRef, onDataChange);
     return () => off(userRef, 'value', onDataChange);
   }, [user]);
 
@@ -663,3 +663,5 @@ function EditorPage() {
 }
 
 export default withAuth(EditorPage);
+
+    
