@@ -8,19 +8,18 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { generateText } from "@/ai/flows/generate-text-from-prompt";
 
-type Message = {
+export type Message = {
   role: "user" | "ai";
   content: string;
 };
 
 interface ChatPanelProps {
+  messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onApplyToEditor: (content: string) => void;
 }
 
-export function ChatPanel({ onApplyToEditor }: ChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "ai", content: "Hello! How can I assist you today?" },
-  ]);
+export function ChatPanel({ messages, setMessages, onApplyToEditor }: ChatPanelProps) {
   const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 

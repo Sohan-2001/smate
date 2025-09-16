@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent, TouchEvent, useRef } from "react";
+import { useState, type MouseEvent, TouchEvent, useRef, useEffect } from "react";
 import { Bot, LogOut, User, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ import { withAuth } from "@/components/with-auth";
 import { useUser } from "@/context/user-context";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { database } from '@/lib/firebase';
+import { ref, onValue, set, off } from "firebase/database";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
@@ -32,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ModeToggle } from "@/components/mode-toggle";
-import { ChatPanel } from "@/components/chat-panel";
+import { ChatPanel, type Message } from "@/components/chat-panel";
 import { LoaderOverlay } from "@/components/loader-overlay";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -66,6 +68,50 @@ function EditorPage() {
   
   const { user } = useUser();
   const router = useRouter();
+
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "ai", content: "Hello! How can I assist you today?" },
+  ]);
+
+  // Load data from Firebase
+  useEffect(() => {
+    if (user) {
+      const userRef = ref(database, `users/${user.uid}`);
+      const onDataChange = (snapshot: any) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          setEditorContent(data.editorContent || '');
+          setMessages(data.chatMessages || [{ role: "ai", content: "Hello! How can I assist you today?" }]);
+        }
+      };
+      onValue(userRef, onDataChange);
+
+      return () => {
+        off(userRef, 'value', onDataChange);
+      };
+    }
+  }, [user]);
+
+  // Save editor content to Firebase
+  useEffect(() => {
+    if (user) {
+      const editorRef = ref(database, `users/${user.uid}/editorContent`);
+      const debounceSave = setTimeout(() => {
+        set(editorRef, editorContent);
+      }, 500); // Debounce to avoid excessive writes
+
+      return () => clearTimeout(debounceSave);
+    }
+  }, [editorContent, user]);
+
+  // Save chat messages to Firebase
+  useEffect(() => {
+    if (user && messages.length > 1) { // Avoid saving initial message
+      const messagesRef = ref(database, `users/${user.uid}/chatMessages`);
+      set(messagesRef, messages);
+    }
+  }, [messages, user]);
+
 
   const handleSignOut = async () => {
     const auth = getAuth();
@@ -300,6 +346,8 @@ function EditorPage() {
 
   const ChatPanelComponent = () => (
     <ChatPanel
+        messages={messages}
+        setMessages={setMessages}
         onApplyToEditor={handleApplyToEditor}
       />
   );
