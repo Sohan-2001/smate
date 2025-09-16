@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -63,6 +64,13 @@ type Preview = {
   corrections?: CheckSpellingOutput["corrections"];
 };
 
+type UserData = {
+    subscription: 'free' | 'paid';
+    chatCount: number;
+    lastChatDate: string; // YYYY-MM-DD
+};
+
+
 const placeholderContent = `Start writing...`;
 
 function EditorPage() {
@@ -85,6 +93,9 @@ function EditorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  const [userData, setUserData] = useState<UserData | null>(null);
+
 
   const router = useRouter();
 
@@ -120,6 +131,33 @@ function EditorPage() {
       set(messagesRef, messages);
     }
   }, [messages, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const userRef = ref(database, `users/${user.uid}/usage`);
+    const onDataChange = (snapshot: any) => {
+      const today = new Date().toISOString().split('T')[0];
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        if (data.lastChatDate !== today) {
+          // Reset daily count if it's a new day
+          const newUserData = { ...data, chatCount: 0, lastChatDate: today };
+          set(userRef, newUserData);
+          setUserData(newUserData);
+        } else {
+          setUserData(data);
+        }
+      } else {
+        // Initialize user data
+        const newUserData: UserData = { subscription: 'free', chatCount: 0, lastChatDate: today };
+        set(userRef, newUserData);
+        setUserData(newUserData);
+      }
+    };
+    onValue(userRef, onDataChange);
+    return () => off(userRef, 'value', onDataChange);
+  }, [user]);
+
 
   const handleSignOut = async () => {
     const auth = getAuth();
@@ -413,12 +451,60 @@ function EditorPage() {
     },
     [undo, redo]
   );
+  
+   const handleUpgrade = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/create-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user!.uid }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create subscription.');
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        subscription_id: data.subscriptionId,
+        name: 'SMATE Pro',
+        description: 'Unlimited AI chat access.',
+        handler: async function (response: any) {
+          toast({ title: 'Payment Successful!', description: 'Your subscription is now active.' });
+        },
+        prefill: {
+          name: user?.displayName || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#6366f1',
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Subscription Error', description: error.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+    // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
 
   const ChatPanelComponent = () => (
     <ChatPanel
       messages={messages}
       setMessages={setMessages}
       onApplyToEditor={handleApplyToEditor}
+      userData={userData}
+      onUpgrade={handleUpgrade}
     />
   );
 

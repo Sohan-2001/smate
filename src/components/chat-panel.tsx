@@ -1,31 +1,60 @@
+
 "use client";
 
 import { useState } from "react";
-import { Bot, Send, Sparkles, User } from "lucide-react";
+import { Bot, Send, Sparkles, User, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { generateText } from "@/ai/flows/generate-text-from-prompt";
+import { database } from "@/lib/firebase";
+import { ref, set } from "firebase/database";
+import { useUser } from "@/context/user-context";
+import { useToast } from "@/hooks/use-toast";
 
 export type Message = {
   role: "user" | "ai";
   content: string;
 };
 
+type UserData = {
+    subscription: 'free' | 'paid';
+    chatCount: number;
+    lastChatDate: string; // YYYY-MM-DD
+};
+
 interface ChatPanelProps {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onApplyToEditor: (content: string) => void;
+  userData: UserData | null;
+  onUpgrade: () => void;
 }
 
-export function ChatPanel({ messages, setMessages, onApplyToEditor }: ChatPanelProps) {
+export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, onUpgrade }: ChatPanelProps) {
   const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
+  const { toast } = useToast();
+  
+  const chatLimit = userData?.subscription === 'paid' ? 100 : 3;
+  const chatsRemaining = userData ? Math.max(0, chatLimit - userData.chatCount) : 0;
+  const hasReachedLimit = userData ? userData.chatCount >= chatLimit : true;
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim() || isLoading) return;
+    if (!chatInput.trim() || isLoading || !user || !userData) return;
+    
+    if (hasReachedLimit) {
+        toast({
+            variant: "destructive",
+            title: "Daily limit reached",
+            description: "Please upgrade to a paid plan for more chats.",
+        });
+        return;
+    }
+
 
     const userMessage: Message = { role: "user", content: chatInput };
     setMessages((prev) => [...prev, userMessage]);
@@ -34,6 +63,10 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor }: ChatPanelP
     setIsLoading(true);
 
     try {
+      // Increment chat count in Firebase
+      const userUsageRef = ref(database, `users/${user.uid}/usage`);
+      await set({ ...userData, chatCount: userData.chatCount + 1 });
+      
       const response = await generateText({ prompt: currentChatInput });
       const aiMessage: Message = {
         role: "ai",
@@ -51,12 +84,26 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor }: ChatPanelP
       setIsLoading(false);
     }
   };
+  
+  const UpgradeButton = () => (
+    <div className="p-4 border-t text-center space-y-2">
+        <p className="text-sm text-muted-foreground">You've reached your daily limit.</p>
+        <Button onClick={onUpgrade} className="w-full">
+            <Zap className="mr-2 h-4 w-4" /> Upgrade to Pro
+        </Button>
+    </div>
+  );
 
   return (
     <>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Bot /> AI Assistant
+        <CardTitle className="flex items-center justify-between text-lg">
+          <div className="flex items-center gap-2">
+           <Bot /> AI Assistant
+          </div>
+          <div className="text-sm font-normal text-muted-foreground">
+            {chatsRemaining} / {chatLimit}
+          </div>
         </CardTitle>
       </CardHeader>
       <ScrollArea className="flex-1 px-4">
@@ -111,24 +158,26 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor }: ChatPanelP
           )}
         </div>
       </ScrollArea>
-      <div className="border-t p-4">
-        <form onSubmit={handleChatSubmit} className="flex gap-2">
-          <Input
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder="Ask AI..."
-            disabled={isLoading}
-            className="focus-visible:ring-primary"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={isLoading || !chatInput.trim()}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
+       {hasReachedLimit && userData?.subscription === 'free' ? <UpgradeButton /> : (
+        <div className="border-t p-4">
+            <form onSubmit={handleChatSubmit} className="flex gap-2">
+            <Input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask AI..."
+                disabled={isLoading || hasReachedLimit}
+                className="focus-visible:ring-primary"
+            />
+            <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || !chatInput.trim() || hasReachedLimit}
+            >
+                <Send className="h-4 w-4" />
+            </Button>
+            </form>
+        </div>
+       )}
     </>
   );
 }
