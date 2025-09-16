@@ -544,7 +544,7 @@ function EditorPage() {
         </div>
         <div className="flex items-center gap-4">
           {userData?.subscription === 'free' && (
-            <Button onClick={() => setShowUpgradeDialog(true)} size="sm">
+            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="hidden md:flex">
               <Zap className="mr-2 h-4 w-4" />
               Subscribe
             </Button>
@@ -612,7 +612,13 @@ function EditorPage() {
         </div>
       </header>
       <main className="flex flex-1 overflow-hidden">
-        <div className="flex-1 relative p-4 md:p-6">
+        <div className="flex-1 relative p-4 md:p-6 flex flex-col gap-4">
+          {userData?.subscription === 'free' && (
+            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="md:hidden">
+              <Zap className="mr-2 h-4 w-4" />
+              Subscribe
+            </Button>
+          )}
           <Textarea
             ref={editorRef}
             value={content || ''}
