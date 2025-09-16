@@ -9,7 +9,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { Bot, LogOut, Redo, Undo, Wand2 } from "lucide-react";
+import { Bot, LogOut, Redo, Undo, Wand2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -527,6 +527,12 @@ function EditorPage() {
             </Button>
         </div>
         <div className="flex items-center gap-4">
+          {userData?.subscription === 'free' && (
+            <Button onClick={handleUpgrade} size="sm">
+              <Zap className="mr-2 h-4 w-4" />
+              Subscribe
+            </Button>
+          )}
           <ModeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

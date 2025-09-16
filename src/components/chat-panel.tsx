@@ -11,7 +11,16 @@ import { generateText } from "@/ai/flows/generate-text-from-prompt";
 import { database } from "@/lib/firebase";
 import { ref, set } from "firebase/database";
 import { useUser } from "@/context/user-context";
-import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export type Message = {
   role: "user" | "ai";
@@ -35,23 +44,19 @@ interface ChatPanelProps {
 export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, onUpgrade }: ChatPanelProps) {
   const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const { user } = useUser();
-  const { toast } = useToast();
   
   const chatLimit = userData?.subscription === 'paid' ? 100 : 3;
   const chatsRemaining = userData ? Math.max(0, chatLimit - userData.chatCount) : 0;
-  const hasReachedLimit = userData ? userData.chatCount >= chatLimit : true;
+  const hasReachedLimit = userData ? userData.chatCount >= chatLimit : false;
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || isLoading || !user || !userData) return;
     
     if (hasReachedLimit) {
-        toast({
-            variant: "destructive",
-            title: "Daily limit reached",
-            description: "Please upgrade to a paid plan for more chats.",
-        });
+        setShowUpgradeDialog(true);
         return;
     }
 
@@ -84,15 +89,6 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
       setIsLoading(false);
     }
   };
-  
-  const UpgradeButton = () => (
-    <div className="p-4 border-t text-center space-y-2">
-        <p className="text-sm text-muted-foreground">You've reached your daily limit.</p>
-        <Button onClick={onUpgrade} className="w-full">
-            <Zap className="mr-2 h-4 w-4" /> Upgrade to Pro
-        </Button>
-    </div>
-  );
 
   return (
     <>
@@ -158,26 +154,44 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           )}
         </div>
       </ScrollArea>
-       {hasReachedLimit && userData?.subscription === 'free' ? <UpgradeButton /> : (
-        <div className="border-t p-4">
-            <form onSubmit={handleChatSubmit} className="flex gap-2">
-            <Input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask AI..."
-                disabled={isLoading || hasReachedLimit}
-                className="focus-visible:ring-primary"
-            />
-            <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || !chatInput.trim() || hasReachedLimit}
-            >
-                <Send className="h-4 w-4" />
-            </Button>
-            </form>
-        </div>
-       )}
+      <div className="border-t p-4">
+          <form onSubmit={handleChatSubmit} className="flex gap-2">
+          <Input
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Ask AI..."
+              disabled={isLoading}
+              className="focus-visible:ring-primary"
+          />
+          <Button
+              type="submit"
+              size="icon"
+              disabled={isLoading || !chatInput.trim()}
+          >
+              <Send className="h-4 w-4" />
+          </Button>
+          </form>
+      </div>
+      <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Free Tier Limit Reached</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've used all your free chats for today. Please upgrade to a Pro plan for unlimited access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowUpgradeDialog(false);
+              onUpgrade();
+            }}>
+              <Zap className="mr-2 h-4 w-4" />
+              Upgrade to Pro
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
