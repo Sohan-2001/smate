@@ -104,11 +104,6 @@ export default function LandingPage() {
         </Link>
         <div className="flex items-center gap-4">
           <ThemeSwitch />
-          <Link href="/auth">
-            <Button>
-              Get Started
-            </Button>
-          </Link>
         </div>
       </header>
 
