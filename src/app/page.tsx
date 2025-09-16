@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Background } from "@/components/background";
-import { Bot, Edit, MousePointerClick } from "lucide-react";
+import { MessageSquare, Edit, MousePointerClick } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeSwitch } from "@/components/theme-switch";
 
@@ -97,7 +96,6 @@ export default function LandingPage() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
-      <Background />
       <header className="fixed top-0 left-0 right-0 z-20 flex h-20 items-center justify-between px-6 bg-background/50 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-3">
             <h1 className="text-xl font-bold tracking-tight">SMATE</h1>
@@ -155,7 +153,7 @@ export default function LandingPage() {
             <CardHeader>
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <Bot className="h-6 w-6 text-primary" />
+                  <MessageSquare className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle className="text-xl font-bold">AI Chat Assistant</CardTitle>
               </div>
