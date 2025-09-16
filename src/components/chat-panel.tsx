@@ -56,7 +56,11 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
     if (!chatInput.trim() || isLoading || !user || !userData) return;
     
     if (hasReachedLimit) {
-        setShowUpgradeDialog(true);
+        const limitMessage: Message = {
+          role: "ai",
+          content: "You have reached your daily limit of 3 free chats. Kindly subscribe to continue chatting, or wait for the next day. Current quota 3 per day."
+        };
+        setMessages((prev) => [...prev, limitMessage]);
         return;
     }
 
@@ -160,13 +164,13 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Ask AI..."
-              disabled={isLoading}
+              disabled={isLoading || hasReachedLimit}
               className="focus-visible:ring-primary"
           />
           <Button
               type="submit"
               size="icon"
-              disabled={isLoading || !chatInput.trim()}
+              disabled={isLoading || !chatInput.trim() || hasReachedLimit}
           >
               <Send className="h-4 w-4" />
           </Button>

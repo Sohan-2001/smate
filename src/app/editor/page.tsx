@@ -50,6 +50,16 @@ import { LoaderOverlay } from "@/components/loader-overlay";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEditorHistory } from "@/hooks/use-editor-history";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Selection = {
   start: number;
@@ -95,6 +105,7 @@ function EditorPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
 
   const router = useRouter();
@@ -154,7 +165,7 @@ function EditorPage() {
         setUserData(newUserData);
       }
     };
-    onValue(userRef, onDataChange);
+    onValue(userRef, 'value', onDataChange);
     return () => off(userRef, 'value', onDataChange);
   }, [user]);
 
@@ -497,6 +508,9 @@ function EditorPage() {
     document.body.appendChild(script);
   }, []);
 
+  const handleChatPanelUpgrade = () => {
+    setShowUpgradeDialog(true);
+  };
 
   const ChatPanelComponent = () => (
     <ChatPanel
@@ -504,7 +518,7 @@ function EditorPage() {
       setMessages={setMessages}
       onApplyToEditor={handleApplyToEditor}
       userData={userData}
-      onUpgrade={handleUpgrade}
+      onUpgrade={handleChatPanelUpgrade}
     />
   );
 
@@ -528,7 +542,7 @@ function EditorPage() {
         </div>
         <div className="flex items-center gap-4">
           {userData?.subscription === 'free' && (
-            <Button onClick={handleUpgrade} size="sm">
+            <Button onClick={() => setShowUpgradeDialog(true)} size="sm">
               <Zap className="mr-2 h-4 w-4" />
               Subscribe
             </Button>
@@ -624,6 +638,26 @@ function EditorPage() {
           />
         )}
       </main>
+      <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upgrade to Pro</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've reached the limit of the free plan. Upgrade to a Pro plan for unlimited access and more features.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowUpgradeDialog(false);
+              handleUpgrade();
+            }}>
+              <Zap className="mr-2 h-4 w-4" />
+              Upgrade
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
