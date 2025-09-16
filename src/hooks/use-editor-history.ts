@@ -74,7 +74,7 @@ export const useEditorHistory = ({ userId }: { userId?: string }) => {
     
     const handler = setTimeout(() => {
         const userEditorRef = ref(database, `users/${userId}/editorContent`);
-        set(userEditorRef, state.present);
+        set(userEditorRef, state.present || '');
     }, 500);
 
     return () => {
