@@ -175,6 +175,11 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
               <Send className="h-4 w-4" />
           </Button>
           </form>
+           {hasReachedLimit && (
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              Today's quota is over. Please subscribe for more.
+            </p>
+          )}
       </div>
       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
         <AlertDialogContent>
