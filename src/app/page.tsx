@@ -1,12 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Edit, MousePointerClick, ArrowRight } from "lucide-react";
 import { ThemeSwitch } from "@/components/theme-switch";
-import Image from 'next/image';
+import { useUser } from "@/context/user-context";
+import { LoaderOverlay } from "@/components/loader-overlay";
 
 export default function LandingPage() {
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/editor");
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) {
+    return <LoaderOverlay />;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
