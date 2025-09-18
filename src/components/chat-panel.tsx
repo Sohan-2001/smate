@@ -57,13 +57,12 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   const hasReachedLimit = userData ? userData.chatCount >= chatLimit && !isDeveloper : false;
 
   useEffect(() => {
-    if (scrollAreaViewportRef.current) {
-        scrollAreaViewportRef.current.scrollTo({
-            top: scrollAreaViewportRef.current.scrollHeight,
-            behavior: 'smooth'
-        });
+    const viewport = scrollAreaViewportRef.current;
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
     }
   }, [messages]);
+
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +112,10 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   const handleClearChat = () => {
     setMessages([initialMessage]);
     setShowClearConfirmDialog(false);
+    if (user) {
+        const userChatRef = ref(database, `users/${user.uid}/chatMessages`);
+        set(userChatRef, [initialMessage]);
+    }
   };
 
   const handleDeleteMessage = (index: number) => {
