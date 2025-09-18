@@ -47,6 +47,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showClearConfirmDialog, setShowClearConfirmDialog] = useState(false);
   const { user } = useUser();
   
   const isDeveloper = user?.email === 'sohan.karfa@gmail.com';
@@ -101,6 +102,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
 
   const handleClearChat = () => {
     setMessages([initialMessage]);
+    setShowClearConfirmDialog(false);
   };
 
   const handleDeleteMessage = (index: number) => {
@@ -116,7 +118,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           </div>
           <div className="flex items-center gap-1">
              {messages.length > 1 && (
-              <Button variant="ghost" size="icon" onClick={handleClearChat} className="h-7 w-7">
+              <Button variant="ghost" size="icon" onClick={() => setShowClearConfirmDialog(true)} className="h-7 w-7">
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Clear Chat</span>
               </Button>
@@ -231,6 +233,22 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
             }}>
               <Zap className="mr-2 h-4 w-4" />
               Upgrade to Pro
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={showClearConfirmDialog} onOpenChange={setShowClearConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Chat History?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete all messages? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearChat}>
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
