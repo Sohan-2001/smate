@@ -104,7 +104,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   };
 
   const handleDeleteMessage = (index: number) => {
-    setMessages(messages.filter((_, i) => i !== index));
+    setMessages((prevMessages) => prevMessages.filter((_, i) => i !== index));
   };
 
   return (
