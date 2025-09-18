@@ -25,7 +25,7 @@ import { useUser } from "@/context/user-context";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { database } from "@/lib/firebase";
-import { ref, onValue, set, off } from "firebase/database";
+import { ref, onValue, set, off, get } from "firebase/database";
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
@@ -112,36 +112,31 @@ function EditorPage() {
   const router = useRouter();
 
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
+  const [chatLoaded, setChatLoaded] = useState(false);
 
   // Load chat messages from Firebase
   useEffect(() => {
     if (user) {
       const userChatRef = ref(database, `users/${user.uid}/chatMessages`);
-      const onDataChange = (snapshot: any) => {
+      get(userChatRef).then((snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
           setMessages(
             data && data.length > 0 ? data : [initialMessage]
           );
         }
-      };
-      onValue(userChatRef, onDataChange);
-
-      return () => {
-        off(userChatRef, "value", onDataChange);
-      };
+        setChatLoaded(true);
+      });
     }
   }, [user]);
 
   // Save chat messages to Firebase
   useEffect(() => {
-    if (user) {
-      // Avoid saving initial message if it's the only one
-      if (messages.length === 1 && messages[0].content === initialMessage.content) return;
+    if (user && chatLoaded) {
       const messagesRef = ref(database, `users/${user.uid}/chatMessages`);
       set(messagesRef, messages);
     }
-  }, [messages, user]);
+  }, [messages, user, chatLoaded]);
 
   useEffect(() => {
     if (!user) return;
@@ -674,3 +669,5 @@ function EditorPage() {
 }
 
 export default withAuth(EditorPage);
+
+    
