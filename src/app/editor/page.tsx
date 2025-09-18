@@ -124,6 +124,11 @@ function EditorPage() {
           setMessages(
             data && data.length > 0 ? data : [initialMessage]
           );
+        } else {
+          // If no messages in DB, set initial message and save it.
+          const initialMessages = [initialMessage];
+          setMessages(initialMessages);
+          set(userChatRef, initialMessages);
         }
         setChatLoaded(true);
       });
@@ -536,7 +541,7 @@ function EditorPage() {
         </div>
         <div className="flex items-center gap-4">
           {userData?.subscription === 'free' && (
-            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="hidden md:flex">
+            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="hidden md:flex bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-red-500">
               <Zap className="mr-2 h-4 w-4" />
               Subscribe
             </Button>
@@ -606,7 +611,7 @@ function EditorPage() {
       <main className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative p-4 md:p-6 flex flex-col gap-4">
           {userData?.subscription === 'free' && (
-            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="md:hidden">
+            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="md:hidden bg-yellow-400 hover:bg-yellow-500 text-black font-bold border-2 border-red-500">
               <Zap className="mr-2 h-4 w-4" />
               Subscribe
             </Button>
@@ -669,5 +674,7 @@ function EditorPage() {
 }
 
 export default withAuth(EditorPage);
+
+    
 
     
