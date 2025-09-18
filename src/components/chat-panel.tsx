@@ -49,9 +49,10 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const { user } = useUser();
   
-  const chatLimit = userData?.subscription === 'paid' ? 100 : 3;
+  const isDeveloper = user?.email === 'sohan.karfa@gmail.com';
+  const chatLimit = (userData?.subscription === 'paid' || isDeveloper) ? 100 : 3;
   const chatsRemaining = userData ? Math.max(0, chatLimit - userData.chatCount) : 0;
-  const hasReachedLimit = userData ? userData.chatCount >= chatLimit : false;
+  const hasReachedLimit = userData ? userData.chatCount >= chatLimit && !isDeveloper : false;
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,9 +75,11 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
     setIsLoading(true);
 
     try {
-      // Increment chat count in Firebase
-      const userUsageRef = ref(database, `users/${user.uid}/usage`);
-      await set(userUsageRef, { ...userData, chatCount: userData.chatCount + 1 });
+      if (!isDeveloper) {
+        // Increment chat count in Firebase for non-dev users
+        const userUsageRef = ref(database, `users/${user.uid}/usage`);
+        await set(userUsageRef, { ...userData, chatCount: userData.chatCount + 1 });
+      }
       
       const response = await generateText({ prompt: currentChatInput });
       const aiMessage: Message = {
@@ -119,7 +122,7 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
               </Button>
             )}
             <div className="text-sm font-normal text-muted-foreground">
-              {chatsRemaining} / {chatLimit}
+              {isDeveloper ? '∞' : `${chatsRemaining} / ${chatLimit}`}
             </div>
           </div>
         </CardTitle>
