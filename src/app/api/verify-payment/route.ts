@@ -35,10 +35,10 @@ export async function POST(req: NextRequest) {
       if (userId) {
         const userUsageRef = ref(database, `users/${userId}/usage`);
         // Update user's subscription status to 'paid'
-        // You might want to get the existing data and merge, but for this case, overwriting is fine.
         const today = new Date().toISOString().split('T')[0];
         await set(userUsageRef, {
             subscription: 'paid',
+            subscriptionStartDate: today,
             chatCount: 0, // Reset chat count on upgrade
             lastChatDate: today,
         });

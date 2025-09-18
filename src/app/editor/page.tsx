@@ -9,7 +9,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { LogOut, Redo, Undo, Wand2, Zap, MessageSquare } from "lucide-react";
+import { LogOut, Redo, Undo, Wand2, Zap, MessageSquare, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { database } from "@/lib/firebase";
 import { ref, onValue, set, off, get } from "firebase/database";
+import { differenceInDays } from 'date-fns';
 
 import { FloatingToolbar } from "@/components/floating-toolbar";
 import { PreviewModal } from "@/components/preview-modal";
@@ -76,6 +77,7 @@ type Preview = {
 
 type UserData = {
     subscription: 'free' | 'paid';
+    subscriptionStartDate?: string; // YYYY-MM-DD
     chatCount: number;
     lastChatDate: string; // YYYY-MM-DD
 };
@@ -150,6 +152,17 @@ function EditorPage() {
       const today = new Date().toISOString().split('T')[0];
       if (snapshot.exists()) {
         const data = snapshot.val();
+         // Check if subscription has expired
+        if (data.subscription === 'paid' && data.subscriptionStartDate) {
+            const daysSinceSub = differenceInDays(new Date(), new Date(data.subscriptionStartDate));
+            if (daysSinceSub > 30) {
+                const expiredUserData = { ...data, subscription: 'free', subscriptionStartDate: null };
+                set(userRef, expiredUserData);
+                setUserData(expiredUserData);
+                return; // Exit to avoid processing old data
+            }
+        }
+        
         if (data.lastChatDate !== today) {
           // Reset daily count if it's a new day
           const newUserData = { ...data, chatCount: 0, lastChatDate: today };
@@ -522,6 +535,34 @@ function EditorPage() {
     />
   );
 
+  const SubscriptionButton = ({ isMobile = false }: { isMobile?: boolean }) => {
+    if (!userData) return null;
+
+    if (userData.subscription === 'paid') {
+      return (
+        <Button
+          size="sm"
+          disabled
+          className={`bg-yellow-100 hover:bg-yellow-100 text-yellow-800 font-bold border border-yellow-300 ${isMobile ? 'md:hidden' : 'hidden md:flex'}`}
+        >
+          <CheckCircle className="mr-2 h-4 w-4" />
+          Subscribed
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        onClick={() => setShowUpgradeDialog(true)}
+        size="sm"
+        className={`bg-yellow-400 hover:bg-yellow-500 text-black font-bold border border-red-500 ${isMobile ? 'md:hidden' : 'hidden md:flex'}`}
+      >
+        <Zap className="mr-2 h-4 w-4" />
+        Subscribe
+      </Button>
+    );
+  };
+
   return (
     <div className="flex h-screen w-full flex-col bg-background">
       {isLoading && <LoaderOverlay />}
@@ -540,12 +581,7 @@ function EditorPage() {
             </Button>
         </div>
         <div className="flex items-center gap-4">
-          {userData?.subscription === 'free' && (
-            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="hidden md:flex bg-yellow-400 hover:bg-yellow-500 text-black font-bold border border-red-500">
-              <Zap className="mr-2 h-4 w-4" />
-              Subscribe
-            </Button>
-          )}
+          <SubscriptionButton />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -610,12 +646,7 @@ function EditorPage() {
       </header>
       <main className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative p-4 md:p-6 flex flex-col gap-4">
-          {userData?.subscription === 'free' && (
-            <Button onClick={() => setShowUpgradeDialog(true)} size="sm" className="md:hidden bg-yellow-400 hover:bg-yellow-500 text-black font-bold border border-red-500">
-              <Zap className="mr-2 h-4 w-4" />
-              Subscribe
-            </Button>
-          )}
+          <SubscriptionButton isMobile />
           <Textarea
             ref={editorRef}
             value={content || ''}
@@ -674,9 +705,3 @@ function EditorPage() {
 }
 
 export default withAuth(EditorPage);
-
-    
-
-    
-
-    
