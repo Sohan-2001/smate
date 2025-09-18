@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MessageSquare, Send, Sparkles, User, Zap, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,11 +49,21 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [showClearConfirmDialog, setShowClearConfirmDialog] = useState(false);
   const { user } = useUser();
+  const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
   
   const isDeveloper = user?.email === 'sohan.karfa@gmail.com';
   const chatLimit = (userData?.subscription === 'paid' || isDeveloper) ? 100 : 3;
   const chatsRemaining = userData ? Math.max(0, chatLimit - userData.chatCount) : 0;
   const hasReachedLimit = userData ? userData.chatCount >= chatLimit && !isDeveloper : false;
+
+  useEffect(() => {
+    if (scrollAreaViewportRef.current) {
+        scrollAreaViewportRef.current.scrollTo({
+            top: scrollAreaViewportRef.current.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+  }, [messages]);
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +139,8 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           </div>
         </CardTitle>
       </CardHeader>
-      <ScrollArea className="flex-1 px-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1" viewportRef={scrollAreaViewportRef}>
+        <div className="space-y-4 px-4">
           {messages.map((msg, index) => (
             <div
               key={index}
