@@ -82,6 +82,7 @@ type UserData = {
 
 
 const placeholderContent = `Start writing...`;
+const initialMessage: Message = { role: "ai", content: "Hello! How can I assist you today?" };
 
 function EditorPage() {
   const { toast } = useToast();
@@ -110,9 +111,7 @@ function EditorPage() {
 
   const router = useRouter();
 
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "ai", content: "Hello! How can I assist you today?" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
 
   // Load chat messages from Firebase
   useEffect(() => {
@@ -122,7 +121,7 @@ function EditorPage() {
         if (snapshot.exists()) {
           const data = snapshot.val();
           setMessages(
-            data || [{ role: "ai", content: "Hello! How can I assist you today?" }]
+            data && data.length > 0 ? data : [initialMessage]
           );
         }
       };
@@ -136,8 +135,9 @@ function EditorPage() {
 
   // Save chat messages to Firebase
   useEffect(() => {
-    if (user && messages.length > 1) {
-      // Avoid saving initial message
+    if (user) {
+      // Avoid saving initial message if it's the only one
+      if (messages.length === 1 && messages[0].content === initialMessage.content) return;
       const messagesRef = ref(database, `users/${user.uid}/chatMessages`);
       set(messagesRef, messages);
     }

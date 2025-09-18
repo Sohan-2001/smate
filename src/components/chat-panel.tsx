@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Send, Sparkles, User, Zap } from "lucide-react";
+import { MessageSquare, Send, Sparkles, User, Zap, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,8 @@ interface ChatPanelProps {
   userData: UserData | null;
   onUpgrade: () => void;
 }
+
+const initialMessage: Message = { role: "ai", content: "Hello! How can I assist you today?" };
 
 export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, onUpgrade }: ChatPanelProps) {
   const [chatInput, setChatInput] = useState("");
@@ -94,6 +96,14 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
     }
   };
 
+  const handleClearChat = () => {
+    setMessages([initialMessage]);
+  };
+
+  const handleDeleteMessage = (index: number) => {
+    setMessages(messages.filter((_, i) => i !== index));
+  };
+
   return (
     <>
       <CardHeader>
@@ -101,8 +111,16 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           <div className="flex items-center gap-2">
            <MessageSquare /> AI Assistant
           </div>
-          <div className="text-sm font-normal text-muted-foreground">
-            {chatsRemaining} / {chatLimit}
+          <div className="flex items-center gap-1">
+             {messages.length > 1 && (
+              <Button variant="ghost" size="icon" onClick={handleClearChat} className="h-7 w-7">
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Clear Chat</span>
+              </Button>
+            )}
+            <div className="text-sm font-normal text-muted-foreground">
+              {chatsRemaining} / {chatLimit}
+            </div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -111,10 +129,23 @@ export function ChatPanel({ messages, setMessages, onApplyToEditor, userData, on
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`flex items-start gap-3 ${
+              className={`group relative flex items-start gap-3 ${
                 msg.role === "user" ? "justify-end" : ""
               }`}
             >
+              {index > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`absolute top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 ${
+                    msg.role === "user" ? "left-0" : "right-0"
+                  }`}
+                  onClick={() => handleDeleteMessage(index)}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Delete message</span>
+                </Button>
+              )}
               {msg.role === "ai" && (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
                   <MessageSquare className="h-5 w-5" />
