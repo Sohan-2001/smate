@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Edit, MousePointerClick, ArrowRight } from "lucide-react";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -60,42 +61,15 @@ export default function LandingPage() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {/* Step 1 */}
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4">1</div>
-                <div className="flex items-center gap-4 mb-4">
-                  <Edit className="h-8 w-8 text-primary" />
-                  <h3 className="text-2xl font-bold">Write & Edit</h3>
-                </div>
-                <p className="text-foreground/80">
-                  Start writing in our clean, real-time editor. Your content is automatically saved, and your edit history is preserved so you never lose your work.
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4">2</div>
-                <div className="flex items-center gap-4 mb-4">
-                  <MousePointerClick className="h-8 w-8 text-primary" />
-                  <h3 className="text-2xl font-bold">Use AI Actions</h3>
-                </div>
-                <p className="text-foreground/80">
-                  Select any piece of text to bring up a contextual menu. Improve writing, fix grammar, change tone, summarize, and more with a single click.
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4">3</div>
-                <div className="flex items-center gap-4 mb-4">
-                  <MessageSquare className="h-8 w-8 text-primary" />
-                  <h3 className="text-2xl font-bold">Chat with AI</h3>
-                </div>
-                <p className="text-foreground/80">
-                  Use the AI assistant sidebar to ask questions, brainstorm ideas, or generate content from a prompt, then apply it directly to your editor.
-                </p>
-              </div>
+            <div className="flex justify-center">
+              <Image 
+                src="/how_to_use_smate.gif" 
+                alt="How to use SMATE instruction GIF" 
+                width={800} 
+                height={600} 
+                unoptimized
+                className="rounded-lg shadow-2xl border"
+              />
             </div>
           </div>
         </section>
