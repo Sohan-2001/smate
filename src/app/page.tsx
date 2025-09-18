@@ -57,11 +57,11 @@ export default function LandingPage() {
                 How It Works
               </h2>
               <p className="mt-4 max-w-2xl mx-auto text-lg text-foreground/80">
-                A simple, three-step process to elevate your writing.
+                A simple, powerful way to elevate your writing.
               </p>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-12">
               <Image 
                 src="/how_to_use_smate.gif" 
                 alt="How to use SMATE instruction GIF" 
@@ -71,6 +71,31 @@ export default function LandingPage() {
                 className="rounded-lg shadow-2xl border"
               />
             </div>
+
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+                <div className="flex flex-col items-center">
+                    <Edit className="h-10 w-10 mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold">Real-time Editor</h3>
+                    <p className="mt-2 text-foreground/80">
+                        Write and edit your documents seamlessly in a clean, distraction-free environment.
+                    </p>
+                </div>
+                <div className="flex flex-col items-center">
+                    <MessageSquare className="h-10 w-10 mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold">AI Chat Assistant</h3>
+                    <p className="mt-2 text-foreground/80">
+                        Get help, ask questions, or generate content using the chat sidebar on the right.
+                    </p>
+                </div>
+                <div className="flex flex-col items-center">
+                    <MousePointerClick className="h-10 w-10 mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold">Contextual AI Actions</h3>
+                    <p className="mt-2 text-foreground/80">
+                        Select text to bring up a floating toolbar with powerful AI editing options.
+                    </p>
+                </div>
+            </div>
+
           </div>
         </section>
 
